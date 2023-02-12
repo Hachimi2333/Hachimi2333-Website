@@ -10,7 +10,7 @@ tags:
 - Windows
 - 文件资源管理器
 title: 🔧 Hash值检验工具
-updated: '2023-02-12 16:43:06'
+updated: Sun, 12 Feb 2023 16:43:06 GMT
 ---
 ## 哈希值检验工具
 
@@ -20,7 +20,7 @@ updated: '2023-02-12 16:43:06'
 
 ## 安装
 
-新建文件`install.reg`
+新建文件 `install.reg`
 
 {% folding child:codeblock open:false color:blue install.reg %}
 
@@ -94,7 +94,7 @@ Windows Registry Editor Version 5.00
 
 ## 卸载
 
-新建文件`uninst.reg`
+新建文件 `uninst.reg`
 
 {% folding child:codeblock open:false color:blue uninst.reg %}
 
@@ -108,6 +108,6 @@ Windows Registry Editor Version 5.00
 
 ## 使用方法
 
-双击`install.reg`安装，双击`uninst.reg`卸载。
+双击 `install.reg`安装，双击 `uninst.reg`卸载。
 
 **需要管理员权限**
