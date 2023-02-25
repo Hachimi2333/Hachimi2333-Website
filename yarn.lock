@@ -753,9 +753,9 @@
     "domelementtype" "^2.2.0"
 
 "dompurify@^2.4.0":
-  "integrity" "sha512-q6QaLcakcRjebxjg8/+NP+h0rPfatOgOzc46Fst9VAA3jF2ApfKBNKMzdP4DYTqtUMXSCd5pRS/8Po/OmoCHZQ=="
-  "resolved" "https://registry.npmmirror.com/dompurify/-/dompurify-2.4.3.tgz"
-  "version" "2.4.3"
+  "integrity" "sha512-1e2SpqHiRx4DPvmRuXU5J0di3iQACwJM+mFGE2HAkkK7Tbnfk9WcghcAmyWc9CRrjyRRUpmuhPUH6LphQQR3EQ=="
+  "resolved" "https://registry.npmmirror.com/dompurify/-/dompurify-2.4.4.tgz"
+  "version" "2.4.4"
 
 "domutils@^1.5.1":
   "integrity" "sha512-Lgd2XcJ/NjEw+7tFvfKxOzCYKZsdct5lczQ2ZaQY8Djz7pfAD3Gbp8ySJWtreII/vDlMVmxwa6pHmdxIYgttDg=="
@@ -2020,13 +2020,13 @@
     "micro-memoize" "^4.0.11"
 
 "moment-timezone@^0.5.21", "moment-timezone@^0.5.34":
-  "integrity" "sha512-tWfmNkRYmBkPJz5mr9GVDn9vRlVZOTe6yqY92rFxiOdWXbjaR0+9LwQnZGGuNR63X456NqmEkbskte8tWL5ePg=="
-  "resolved" "https://registry.npmmirror.com/moment-timezone/-/moment-timezone-0.5.40.tgz"
-  "version" "0.5.40"
+  "integrity" "sha512-e0jGNZDOHfBXJGz8vR/sIMXvBIGJJcqFjmlg9lmE+5KX1U7/RZNMswfD8nKnNCnQdKTIj50IaRKwl1fvMLyyRg=="
+  "resolved" "https://registry.npmmirror.com/moment-timezone/-/moment-timezone-0.5.41.tgz"
+  "version" "0.5.41"
   dependencies:
-    "moment" ">= 2.9.0"
+    "moment" "^2.29.4"
 
-"moment@^2.10.6", "moment@^2.22.2", "moment@^2.29.1", "moment@>= 2.9.0":
+"moment@^2.10.6", "moment@^2.22.2", "moment@^2.29.1", "moment@^2.29.4":
   "integrity" "sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w=="
   "resolved" "https://registry.npmmirror.com/moment/-/moment-2.29.4.tgz"
   "version" "2.29.4"
@@ -2208,9 +2208,9 @@
     "wrappy" "1"
 
 "open@^8.0.9":
-  "integrity" "sha512-/4b7qZNhv6Uhd7jjnREh1NjnPxlTq+XNWPG88Ydkj5AILcA5m3ajvcg57pB24EQjKv0dK62XnDqk9c/hkIG5Kg=="
-  "resolved" "https://registry.npmmirror.com/open/-/open-8.4.1.tgz"
-  "version" "8.4.1"
+  "integrity" "sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ=="
+  "resolved" "https://registry.npmmirror.com/open/-/open-8.4.2.tgz"
+  "version" "8.4.2"
   dependencies:
     "define-lazy-prop" "^2.0.0"
     "is-docker" "^2.1.1"
@@ -2360,9 +2360,9 @@
     "util-deprecate" "~1.0.1"
 
 "readable-stream@^3.1.1", "readable-stream@3":
-  "integrity" "sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA=="
-  "resolved" "https://registry.npmmirror.com/readable-stream/-/readable-stream-3.6.0.tgz"
-  "version" "3.6.0"
+  "integrity" "sha512-+rQmrWMYGA90yenhTYsLWAsLsqVC8osOw6PKE1HDYiO0gdPeKe/xDHNzIAIn4C91YQ6oenEhfYqqc1883qHbjQ=="
+  "resolved" "https://registry.npmmirror.com/readable-stream/-/readable-stream-3.6.1.tgz"
+  "version" "3.6.1"
   dependencies:
     "inherits" "^2.0.3"
     "string_decoder" "^1.1.1"
@@ -3046,9 +3046,9 @@
   "version" "1.0.2"
 
 "ws@^8.11.0":
-  "integrity" "sha512-kU62emKIdKVeEIOIKVegvqpXMSTAMLJozpHZaJNDYqBjzlSYXQGviYwN1osDLJ9av68qHd4a2oSjd7yD4pacig=="
-  "resolved" "https://registry.npmmirror.com/ws/-/ws-8.12.0.tgz"
-  "version" "8.12.0"
+  "integrity" "sha512-1qo+M9Ba+xNhPB+YTWUlK6M17brTut5EXbcBaMRN5pH5dFrXz7lzz1ChFSUq3bOUl8yEvSenhHmYUNJxFzdJew=="
+  "resolved" "https://registry.npmmirror.com/ws/-/ws-8.12.1.tgz"
+  "version" "8.12.1"
 
 "xml-name-validator@^4.0.0":
   "integrity" "sha512-ICP2e+jsHvAj2E2lIHxa5tjXRlKDJo4IdvPvCXbXQGdzSfmSpNVyIKMvoZHjDY9DP0zV17iI85o90vRFXNccRw=="
