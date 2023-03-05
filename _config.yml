@@ -126,8 +126,5 @@ inject:
     - <meta name="baidu-site-verification" content="codeva-nxdKPRZGzn" />
     # Bing Webmaster
     - <meta name="msvalidate.01" content="0F11E4CC0C8CF5D028D130A84E0D8E06" />
-    # 51LA
-    - <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
-    - <script>LA.init({id:"Jy9mgeUGYzkLGQlG",ck:"Jy9mgeUGYzkLGQlG"})</script>
 
   script:
