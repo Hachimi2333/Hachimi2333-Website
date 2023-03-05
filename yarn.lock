@@ -753,9 +753,9 @@
     "domelementtype" "^2.2.0"
 
 "dompurify@^2.4.0":
-  "integrity" "sha512-1e2SpqHiRx4DPvmRuXU5J0di3iQACwJM+mFGE2HAkkK7Tbnfk9WcghcAmyWc9CRrjyRRUpmuhPUH6LphQQR3EQ=="
-  "resolved" "https://registry.npmmirror.com/dompurify/-/dompurify-2.4.4.tgz"
-  "version" "2.4.4"
+  "integrity" "sha512-jggCCd+8Iqp4Tsz0nIvpcb22InKEBrGz5dw3EQJMs8HPJDsKbFIO3STYtAvCfDx26Muevn1MHVI0XxjgFfmiSA=="
+  "resolved" "https://registry.npmmirror.com/dompurify/-/dompurify-2.4.5.tgz"
+  "version" "2.4.5"
 
 "domutils@^1.5.1":
   "integrity" "sha512-Lgd2XcJ/NjEw+7tFvfKxOzCYKZsdct5lczQ2ZaQY8Djz7pfAD3Gbp8ySJWtreII/vDlMVmxwa6pHmdxIYgttDg=="

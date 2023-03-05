@@ -5,3 +5,17 @@ welcome:
     ⚠网站新域名为[**hachimi2333.top**](https://www.hachimi2333.top/)，旧域名仍将使用，但停止维护。
     当前正在开发项目『[Project-Akari](../project/Project-Akari/)』
     小破站正在进行改版，若页面显示不正常请`Shift+F5`清除缓存加载！
+
+tagcloud:
+  layout: tagcloud
+  title: 标签
+  # 标签云配置
+  min_font: 12
+  max_font: 24
+  amount: 100
+  orderby: name
+  order: 1 # 1, sac 升序；-1, desc 降序
+  color: false # 使用颜色
+  start_color:  # 开始的颜色。您可使用十六进位值（'#b700ff'），rgba（rgba(183, 0, 255, 1)），hsla（hsla(283, 100%, 50%, 1)）或 颜色关键字。此变量仅在 color 参数开启时才有用。
+  end_color:  # 结束的颜色。您可使用十六进位值（'#b700ff'），rgba（rgba(183, 0, 255, 1)），hsla（hsla(283, 100%, 50%, 1)）或 颜色关键字。此变量仅在 color 参数开启时才有用。
+  show_count: false # 显示每个标签的文章总数

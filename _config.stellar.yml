@@ -33,9 +33,9 @@ sidebar:
     tools: [search, recent]
     about: [search, recent]
   widgets:
-    home: search, welcome, recent
-    blog_index: search, welcome, recent
-    page: search, welcome, recent
+    home: search, welcome, tagcloud
+    blog_index: search, welcome, tagcloud
+    page: search, welcome, tagcloud
     # Recent update
     recent:
       layout: recent
