@@ -111,7 +111,8 @@ deploy:
 
 inject:
   head:
-    - <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap" rel="stylesheet">
+    # - <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap" rel="stylesheet">
+    - <link href="/fonts/StarRail/stylesheet.css" rel="stylesheet">
     # 百度统计
     - <script>
         var _hmt = _hmt || [];
