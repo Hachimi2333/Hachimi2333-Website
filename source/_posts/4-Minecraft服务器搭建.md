@@ -1,6 +1,6 @@
 ---
 title: ⛏️ Minecraft服务器搭建
-cover: https://assets.hachimi2333.top/blog/cover/3.webp
+cover: https://assets.hachimi2333.top/blog/3/cover-3.webp
 categories: [Minecraft, 服务器]
 tags: [Minecraft, 服务器]
 date: 2022-9-12
@@ -215,7 +215,7 @@ OP将默认拥有最高控制台权限，请谨慎给予玩家OP！
 
 等待出现以下内容，即可使用日志内IP进行连接。
 
-{% image https://assets.hachimi2333.top/blog/6/tunnel.webp 隧道 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/4/tunnel.webp 隧道 fancybox:true ratio:488/78 %}
 
 ## 注意事项
 

@@ -14,7 +14,7 @@ date: 2022-9-11
 
 注册的时候地区选择US West 即美国西部，如图
 
-{% image https://assets.hachimi2333.top/blog/1/b2reg.webp 地区选择US West fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/2/b2reg.webp 地区选择US West fancybox:true ratio:1122/600 %}
 
 注册完之后来到后台面板
 
@@ -22,7 +22,7 @@ date: 2022-9-11
 
 点击 `Create a new bucket` 创建一个存储桶，名字随意，如图。
 
-{% image https://assets.hachimi2333.top/blog/1/createbucket.webp 创建储存桶 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/2/createbucket.webp 创建储存桶 fancybox:true ratio:586/343 %}
 
 创建时请选择公开**public**！
 
@@ -34,7 +34,7 @@ date: 2022-9-11
 
 上传完之后，点击最右端信息按钮，即可查看文件信息，如图。
 
-{% image https://assets.hachimi2333.top/blog/1/fileinfo.webp 文件信息 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/2/fileinfo.webp 文件信息 fancybox:true ratio:780/540 %}
 
 ## 接入 Cloudflare
 
@@ -46,11 +46,11 @@ date: 2022-9-11
 
 添加记录，记录类型选 `CNAME`，名称随意，然后将Friendly URL里的根域名填进去，打开代理。
 
-{% image https://assets.hachimi2333.top/blog/1/createcname.webp 创建CNAME记录 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/2/createcname.webp 创建CNAME记录 fancybox:true ratio:965/147 %}
 
 接下来打开 `页面规则` ，添加一个规则，如图。
 
-{% image https://assets.hachimi2333.top/blog/1/createrules.webp 添加页面规则 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/2/createrules.webp 添加页面规则 fancybox:true ratio:774/470 %}
 
 接下来，把 Friendly URL 中的根域名换成你自己接入 Cloudflare 的域名就可以访问了！
 
@@ -62,7 +62,7 @@ date: 2022-9-11
 
 修改SSL/TLS 加密模式为 **完全（严格）**，如图
 
-{% image https://assets.hachimi2333.top/blog/1/strictssl.webp SSL/TLS加密模式 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/2/strictssl.webp SSL/TLS加密模式 fancybox:true ratio:949/525 %}
 
 接下来，把 Friendly URL 中的根域名换成你自己接入 Cloudflare 的域名就可以访问了！
 

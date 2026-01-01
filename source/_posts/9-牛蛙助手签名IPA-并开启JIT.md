@@ -15,7 +15,7 @@ date: 2022-12-11
 
 双击打开`BAInstaller.exe`，将手机通过数据线连接到电脑。
 
-{% image https://assets.hachimi2333.top/blog/11/bfinstall.webp 安装牛蛙助手 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/9/bfinstall.webp 安装牛蛙助手 fancybox:true ratio:1000/600 %}
 
 点击`安装`等待应用安装
 
@@ -35,11 +35,11 @@ date: 2022-12-11
 
 使用时不可断开专用网络
 
-{% image https://assets.hachimi2333.top/blog/11/VPN.webp 连接专用网络 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/9/VPN.webp 连接专用网络 fancybox:true ratio:750/571 %}
 
 ## 使用
 
-{% image https://assets.hachimi2333.top/blog/11/tools.webp 功能 fancybox:true %}
+{% image https://assets.hachimi2333.top/blog/9/tools.webp 功能 fancybox:true ratio:750/1334 %}
 
 ### 签名
 
