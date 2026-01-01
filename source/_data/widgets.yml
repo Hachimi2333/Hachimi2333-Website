@@ -4,7 +4,7 @@ welcome:
   content: |
     🌐出于网站结构优化，本博客网址更改为`blog.hachimi2333.top`
     🛜网站图床优化升级中，暂时会出现无法访问等现象
-    🔧若网站无法正常访问，请清除缓存
+    🔧修复Fancybox组件的bug
 
 tagcloud:
   layout: tagcloud
