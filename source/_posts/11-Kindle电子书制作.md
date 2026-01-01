@@ -18,7 +18,7 @@ date: 2023-01-23
 
 进入软件后点击左上角**添加书籍**，导入电子书即可。界面长下面这个样子。
 
-{% image https://s2.loli.net/2023/01/23/IA2NKHP785YzMFt.webp 软件界面 fancybox:true %}
+{% image https://s2.loli.net/2023/01/23/IA2NKHP785YzMFt.webp 软件界面 fancybox:true ratio:918/448 %}
 
 ## 推送
 
@@ -30,7 +30,7 @@ date: 2023-01-23
 
 再点击**发送到设备**即可。
 
-{% image https://s2.loli.net/2023/01/23/IN8w4tAPMGWJpD6.webp 发送到设备 fancybox:true %}
+{% image https://s2.loli.net/2023/01/23/IN8w4tAPMGWJpD6.webp 发送到设备 fancybox:true ratio:68/75 %}
 
 ## 封面
 
@@ -40,7 +40,7 @@ date: 2023-01-23
 
 在你转换至AZW3格式时，它会默认帮你将第一页设为封面，你也可以在下面的文件选择框里自定义。
 
-{% image https://s2.loli.net/2023/01/23/lq2EY9Z7wjhzgmN.webp 修改封面图像 fancybox:true %}
+{% image https://s2.loli.net/2023/01/23/lq2EY9Z7wjhzgmN.webp 修改封面图像 fancybox:true ratio:240/89 %}
 
 转换完之后，推送到设备，你会发现封面只存在一瞬间。
 
@@ -62,7 +62,7 @@ date: 2023-01-23
 
 进入后点击**导入umd**，填写书籍信息，等待导入成功。
 
-{% image https://s2.loli.net/2023/01/23/Eqz6kya5JnUwGMC.webp 导入UMD fancybox:true %}
+{% image https://s2.loli.net/2023/01/23/Eqz6kya5JnUwGMC.webp 导入UMD fancybox:true ratio:75/85 %}
 
 选择导出**epub**，添加入Calibre书库即可。
 
