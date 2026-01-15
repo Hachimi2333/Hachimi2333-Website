@@ -1,6 +1,5 @@
 ---
 title: ⛏️ Minecraft服务器搭建
-cover: https://assets.hachimi2333.top/blog/3/cover-3.webp
 categories: [Minecraft, 服务器]
 tags: [Minecraft, 服务器]
 date: 2022-9-12
