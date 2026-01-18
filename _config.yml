@@ -113,19 +113,19 @@ inject:
   head:
     # - <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap" rel="stylesheet">
     # - <link href="/fonts/StarRail/stylesheet.css" rel="stylesheet">
-    # 百度统计
-    - <script>
-        var _hmt = _hmt || [];
-        (function() {
-          var hm = document.createElement("script");
-          hm.src = "https://hm.baidu.com/hm.js?e8aa40ea56bc304fee241e978e56bb3f";
-          var s = document.getElementsByTagName("script")[0]; 
-          s.parentNode.insertBefore(hm, s);
-        })();
-      </script>
-    # 百度站长平台
-    - <meta name="baidu-site-verification" content="codeva-nxdKPRZGzn" />
-    # Bing Webmaster
-    - <meta name="msvalidate.01" content="0F11E4CC0C8CF5D028D130A84E0D8E06" />
+    # # 百度统计
+    # - <script>
+    #     var _hmt = _hmt || [];
+    #     (function() {
+    #       var hm = document.createElement("script");
+    #       hm.src = "https://hm.baidu.com/hm.js?e8aa40ea56bc304fee241e978e56bb3f";
+    #       var s = document.getElementsByTagName("script")[0]; 
+    #       s.parentNode.insertBefore(hm, s);
+    #     })();
+    #   </script>
+    # # 百度站长平台
+    # - <meta name="baidu-site-verification" content="codeva-nxdKPRZGzn" />
+    # # Bing Webmaster
+    # - <meta name="msvalidate.01" content="0F11E4CC0C8CF5D028D130A84E0D8E06" />
 
   script:
