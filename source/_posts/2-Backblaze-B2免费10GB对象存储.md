@@ -3,6 +3,7 @@ title: 📁 Backblaze B2 免费 10GB 对象存储
 categories: [资源分享, 建站资源]
 tags: [对象储存, 白嫖党, 建站]
 date: 2022-9-11
+cover: https://assets.hachimi2333.top/blog/2/cover-2.webp
 ---
 # Backblaze B2 免费 10GB 对象存储
 

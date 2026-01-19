@@ -2,7 +2,8 @@ welcome:
   layout: markdown
   title: Ciallo～(∠·ω< )⌒★
   content: |
-    网站已完成ICP备案
+    🌐网站已完成ICP备案
+    🛜网站图床链接已更改为国内加速CDN，访问异常请刷新缓存
 
 tagcloud:
   layout: tagcloud
