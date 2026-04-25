@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Github, Mail } from 'lucide-vue-next'
+
 </script>
 
 <template>
