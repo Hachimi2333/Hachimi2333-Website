@@ -49,10 +49,13 @@ function loadPost() {
   const slug = route.params.slug as string
   post.value = getPostBySlug(slug)
   if (post.value) {
+    document.title = `${post.value.title} - Hachimi2333`
     renderedContent.value = renderMarkdown(post.value.content)
     const charCount = post.value.content.length
     const minutes = Math.max(1, Math.ceil(charCount / 400))
     readingTime.value = `${minutes} 分钟`
+  } else {
+    document.title = '文章未找到 - Hachimi2333'
   }
 }
 

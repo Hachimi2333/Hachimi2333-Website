@@ -28,14 +28,14 @@ const navLinks = [
           :key="link.to"
           :to="link.to"
           :class="[
-            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+            'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
             route.path.startsWith(link.to)
               ? 'bg-accent text-accent-foreground'
               : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
           ]"
         >
           <component :is="link.icon" class="h-4 w-4" />
-          {{ link.label }}
+          <span class="hidden sm:inline">{{ link.label }}</span>
         </router-link>
 
         <a

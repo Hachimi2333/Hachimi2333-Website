@@ -92,8 +92,8 @@ function clearCategoryFilter() {
 
     <!-- Tabs + Search -->
     <Tabs ref="tabsRef" v-model="activeTab" class="mb-6">
-      <div class="flex items-center gap-4">
-        <TabsList>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <TabsList class="w-full sm:w-auto [&>button]:flex-1">
           <TabsTrigger value="articles">
             <FileText class="mr-1.5 h-3.5 w-3.5" />
             文章
@@ -108,18 +108,16 @@ function clearCategoryFilter() {
           </TabsTrigger>
         </TabsList>
 
-        <div class="flex-1">
-          <Transition name="search-fade">
-            <div v-if="activeTab === 'articles'" class="relative max-w-xs ml-auto">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                v-model="searchQuery"
-                placeholder="搜索文章..."
-                class="pl-9"
-              />
-            </div>
-          </Transition>
-        </div>
+        <Transition name="search-fade">
+          <div v-if="activeTab === 'articles'" class="relative w-full sm:flex-1 sm:max-w-xs sm:ml-auto">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              v-model="searchQuery"
+              placeholder="搜索文章..."
+              class="pl-9"
+            />
+          </div>
+        </Transition>
       </div>
 
       <!-- Articles Tab -->
