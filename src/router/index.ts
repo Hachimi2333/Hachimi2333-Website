@@ -21,7 +21,6 @@ const router = createRouter({
       path: '/posts/:slug',
       name: 'post-detail',
       component: () => import('@/views/blog/PostDetailView.vue'),
-      meta: { title: BASE_TITLE },
     },
     {
       path: '/tools',
@@ -37,8 +36,7 @@ const router = createRouter({
 })
 
 router.afterEach((to) => {
-  const title = to.meta.title as string | undefined
-  document.title = title || BASE_TITLE
+  document.title = (to.meta.title as string) || BASE_TITLE
 })
 
 export default router
