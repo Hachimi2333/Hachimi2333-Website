@@ -10,7 +10,7 @@ const route = useRoute()
 <template>
   <div :class="route.path === '/' ? 'h-svh overflow-hidden' : 'min-h-screen'" class="flex flex-col">
     <AppHeader v-if="route.path !== '/'" />
-    <main class="flex-1">
+    <main class="flex-1 flex flex-col">
       <router-view v-slot="{ Component, route }">
         <Transition name="fade" mode="out-in">
           <component :is="Component" :key="route.path" />

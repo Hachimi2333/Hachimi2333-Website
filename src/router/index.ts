@@ -28,6 +28,12 @@ const router = createRouter({
       component: () => import('@/views/ToolsView.vue'),
       meta: { title: `工具 - ${BASE_TITLE}` },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { title: `404 - ${BASE_TITLE}` },
+    },
   ],
   scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) return savedPosition
