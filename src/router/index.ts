@@ -29,6 +29,12 @@ const router = createRouter({
       meta: { title: `工具 - ${BASE_TITLE}` },
     },
     {
+      path: '/tools/cover-generator',
+      name: 'cover-generator',
+      component: () => import('@/views/tools/CoverGeneratorView.vue'),
+      meta: { title: `文章封面生成器 - ${BASE_TITLE}` },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
