@@ -35,6 +35,12 @@ const router = createRouter({
       meta: { title: `文章封面生成器 - ${BASE_TITLE}` },
     },
     {
+      path: '/tools/app-icon-generator',
+      name: 'app-icon-generator',
+      component: () => import('@/views/tools/AppIconGeneratorView.vue'),
+      meta: { title: `App 图标生成器 - ${BASE_TITLE}` },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
