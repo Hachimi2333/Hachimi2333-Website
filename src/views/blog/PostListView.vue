@@ -1,52 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Search, Calendar, FolderOpen, FileText, Archive, X, Tag } from 'lucide-vue-next'
-import { getAllPosts, getAllCategories, searchPosts, getArchivesByYear } from '@/lib/blog'
+import { Search, Calendar, FolderOpen, FileText, Archive, Tag } from 'lucide-vue-next'
+import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
 
 const router = useRouter()
-const tabsRef = ref<InstanceType<typeof Tabs> | null>(null)
 const activeTab = ref('articles')
 const searchQuery = ref('')
-const archiveCategoryFilter = ref<string | null>(null)
 
 const allPosts = getAllPosts()
-const categories = getAllCategories()
-
-const categoryCounts = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const post of allPosts) {
-    if (post.category) {
-      counts[post.category] = (counts[post.category] || 0) + 1
-    }
-  }
-  return counts
-})
 
 const filteredPosts = computed(() => {
-  let result = allPosts
-
   if (searchQuery.value) {
-    result = searchPosts(searchQuery.value)
+    return searchPosts(searchQuery.value)
   }
-
-  if (archiveCategoryFilter.value) {
-    result = result.filter((p) => p.category === archiveCategoryFilter.value)
-  }
-
-  return result
+  return allPosts
 })
 
-const yearArchives = computed(() => getArchivesByYear(archiveCategoryFilter.value))
-
-watch(archiveCategoryFilter, () => {
-  searchQuery.value = ''
-})
+const yearArchives = computed(() => getArchivesByYear())
 
 function formatDate(date: string) {
   if (!date) return ''
@@ -71,16 +47,6 @@ function extractDescription(post: { description: string; content: string }): str
   return first.replace(/\*\*|__|\*|_|\[.*?\]\(.*?\)|`{1,3}/g, '').slice(0, 120)
 }
 
-function selectCategory(cat: string) {
-  archiveCategoryFilter.value = cat
-  tabsRef.value?.activateTab('archives')
-}
-
-function clearCategoryFilter() {
-  archiveCategoryFilter.value = null
-}
-
-
 </script>
 
 <template>
@@ -91,16 +57,12 @@ function clearCategoryFilter() {
     </div>
 
     <!-- Tabs + Search -->
-    <Tabs ref="tabsRef" v-model="activeTab" class="mb-6">
+    <Tabs v-model="activeTab" class="mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center gap-3">
         <TabsList class="w-full sm:w-auto [&>button]:flex-1">
           <TabsTrigger value="articles">
             <FileText class="mr-1.5 h-3.5 w-3.5" />
             文章
-          </TabsTrigger>
-          <TabsTrigger value="categories">
-            <FolderOpen class="mr-1.5 h-3.5 w-3.5" />
-            分类
           </TabsTrigger>
           <TabsTrigger value="archives">
             <Archive class="mr-1.5 h-3.5 w-3.5" />
@@ -185,64 +147,9 @@ function clearCategoryFilter() {
         </div>
       </TabsContent>
 
-      <!-- Categories Tab -->
-      <TabsContent value="categories">
-        <div class="mt-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card
-              v-for="cat in categories"
-              :key="cat"
-              class="group cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200"
-              @click="selectCategory(cat)"
-            >
-              <CardContent class="p-5">
-                <div class="flex items-start justify-between mb-3">
-                  <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200">
-                      <FolderOpen class="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 class="font-semibold text-foreground">{{ cat }}</h3>
-                      <p class="text-xs text-muted-foreground mt-0.5">{{ categoryCounts[cat] || 0 }} 篇文章</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary">{{ categoryCounts[cat] || 0 }}</Badge>
-                </div>
-                <div class="w-full h-1 rounded-full bg-muted overflow-hidden">
-                  <div
-                    class="h-full rounded-full bg-primary/60 group-hover:bg-primary transition-colors duration-200"
-                    :style="{ width: `${Math.min(100, ((categoryCounts[cat] || 0) / allPosts.length) * 100 * 2)}%` }"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div v-if="categories.length === 0" class="text-center py-16 text-muted-foreground">
-            <FolderOpen class="h-12 w-12 mx-auto mb-4 opacity-20" />
-            <p class="text-lg">暂无分类</p>
-          </div>
-        </div>
-      </TabsContent>
-
       <!-- Archives Tab -->
       <TabsContent value="archives">
         <div class="mt-4 space-y-6">
-          <!-- Category filter -->
-          <div v-if="archiveCategoryFilter" class="flex items-center gap-2 text-sm">
-            <span class="text-muted-foreground">筛选分类:</span>
-            <Badge variant="secondary" class="gap-1">
-              <FolderOpen class="h-3 w-3" />
-              {{ archiveCategoryFilter }}
-              <button
-                class="ml-0.5 rounded-full hover:bg-foreground/10 transition-colors"
-                @click="clearCategoryFilter"
-              >
-                <X class="h-3 w-3" />
-              </button>
-            </Badge>
-          </div>
-
           <div v-for="group in yearArchives" :key="group.year">
             <!-- Year header -->
             <div class="flex items-center gap-3 mb-3">

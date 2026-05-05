@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { Search, Upload, Download, RotateCcw, Palette, Maximize2 } from 'lucide-vue-next'
+import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown } from 'lucide-vue-next'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
@@ -25,6 +25,23 @@ const colorMode = ref<'original' | 'custom'>('original')
 const customColor = ref('#3b82f6')
 const iconInfoText = ref('未选择图标')
 const filename = ref('article-cover')
+const exportFormat = ref<'png' | 'webp'>('png')
+const showFormatMenu = ref(false)
+
+function toggleFormatMenu(e: Event) {
+  e.stopPropagation()
+  showFormatMenu.value = !showFormatMenu.value
+}
+
+function selectFormat(format: 'png' | 'webp') {
+  exportFormat.value = format
+  showFormatMenu.value = false
+  exportCanvas(format)
+}
+
+function closeFormatMenu() {
+  showFormatMenu.value = false
+}
 
 function getCtx() {
   const canvas = canvasRef.value
@@ -286,6 +303,8 @@ function resetAll() {
   colorMode.value = 'original'
   customColor.value = '#3b82f6'
   filename.value = 'article-cover'
+  exportFormat.value = 'png'
+  showFormatMenu.value = false
   nextTick(() => {
     clearCanvas()
     iconInfoText.value = '未选择图标'
@@ -319,25 +338,20 @@ function getSearchIconUrl(iconName: string): string {
 }
 
 onMounted(() => {
-  searchQuery.value = 'mdi:home'
-  nextTick(() => {
-    loadIconByName('mdi:home')
-    searchIcons('home')
-  })
+  clearCanvas()
 })
 </script>
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold tracking-tight">文章封面生成器</h1>
     </div>
 
     <div class="space-y-6">
       <!-- Preview -->
-      <Card class="overflow-hidden">
-        <div class="aspect-[1920/600] w-full bg-white border-b">
+      <Card>
+        <div class="aspect-[1920/600] w-full bg-white border-b overflow-hidden rounded-t-xl">
           <canvas
             ref="canvasRef"
             width="1920"
@@ -345,21 +359,35 @@ onMounted(() => {
             class="w-full h-full cursor-crosshair"
           />
         </div>
-        <div class="flex items-center justify-between gap-4 px-6 py-2.5 text-sm text-muted-foreground border-b">
-          <div class="flex items-center gap-3 min-w-0">
-            <span class="tabular-nums shrink-0">1920 × 600 px</span>
-            <span class="text-border">|</span>
-            <span class="truncate">{{ iconInfoText }}</span>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <Button size="sm" @click="exportCanvas('png')">
-              <Download class="h-3.5 w-3.5 mr-1" />
-              PNG
-            </Button>
-            <Button size="sm" variant="secondary" @click="exportCanvas('webp')">
-              WebP
-            </Button>
-            <Button variant="ghost" size="icon" class="h-8 w-8" @click="resetAll" title="重置">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 sm:px-6 py-3 text-sm text-muted-foreground">
+          <span class="tabular-nums shrink-0">1920 × 600 px</span>
+          <div class="flex items-center gap-2">
+            <div class="relative inline-flex">
+              <Button size="sm" class="rounded-r-none" variant="outline" @click="exportCanvas(exportFormat)">
+                <Download class="h-3.5 w-3.5 mr-1" />
+                下载 {{ exportFormat.toUpperCase() }}
+              </Button>
+              <Button size="sm" class="rounded-l-none px-1.5" variant="outline" @click="toggleFormatMenu">
+                <ChevronDown class="h-3.5 w-3.5" />
+              </Button>
+              <div
+                v-if="showFormatMenu"
+                class="absolute right-0 top-full mt-1 bg-popover border rounded-md shadow-md z-10 py-1 min-w-[100px]"
+                @click.stop
+              >
+                <button
+                  class="block w-full text-left px-3 py-1.5 text-sm hover:bg-accent"
+                  :class="exportFormat === 'png' ? 'font-medium' : ''"
+                  @click="selectFormat('png')"
+                >PNG</button>
+                <button
+                  class="block w-full text-left px-3 py-1.5 text-sm hover:bg-accent"
+                  :class="exportFormat === 'webp' ? 'font-medium' : ''"
+                  @click="selectFormat('webp')"
+                >WebP</button>
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0" @click="resetAll" title="重置">
               <RotateCcw class="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -375,9 +403,28 @@ onMounted(() => {
               <Search class="h-4 w-4 text-muted-foreground" />
               图标来源
             </CardTitle>
-            <CardDescription>搜索 Iconify 图标库或上传本地图片</CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
+            <div
+              v-if="currentIconName || uploadedImageData"
+              class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
+            >
+              <span class="text-muted-foreground shrink-0">当前:</span>
+              <span
+                class="truncate"
+                :class="searchStatus.includes('失败') ? 'text-destructive' : ''"
+              >{{ iconInfoText }}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-6 w-6 shrink-0 ml-auto"
+                @click="resetAll"
+                title="清除"
+              >
+                <span class="text-muted-foreground text-sm leading-none">&times;</span>
+              </Button>
+            </div>
+
             <div class="flex gap-2">
               <Input
                 v-model="searchQuery"
@@ -391,9 +438,8 @@ onMounted(() => {
             </div>
 
             <p
-              v-if="searchStatus"
-              class="text-xs"
-              :class="searchStatus.includes('失败') || searchStatus.includes('出错') ? 'text-destructive' : 'text-muted-foreground'"
+              v-if="searchStatus && !currentIconName && !uploadedImageData"
+              class="text-xs text-muted-foreground"
             >
               {{ searchStatus }}
             </p>
@@ -461,7 +507,6 @@ onMounted(() => {
               <Maximize2 class="h-4 w-4 text-muted-foreground" />
               显示设置
             </CardTitle>
-            <CardDescription>调整图标大小、颜色与导出文件名</CardDescription>
           </CardHeader>
           <CardContent class="space-y-5">
             <div class="space-y-2">
@@ -539,5 +584,8 @@ onMounted(() => {
         </Card>
       </div>
     </div>
+
+    <!-- Click-outside to close format menu -->
+    <div v-if="showFormatMenu" class="fixed inset-0 z-[5]" @click="closeFormatMenu" />
   </div>
 </template>
