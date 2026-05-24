@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集成图像处理管线（抠图 → 堆叠 → 侵蚀 → 净化 → 矢量优化）</title>
+    <style>
+        :root{--primary:#2563eb;--bg:#0b1220;--panel:#f8fafc;--text:#0f172a}
+        body{margin:0;font-family:Segoe UI,Roboto,Arial;background:var(--bg);color:#eef2ff;display:flex;height:100vh;overflow:hidden}
+        .sidebar{width:360px;background:var(--panel);color:var(--text);padding:20px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow:auto}
+        h2{margin:0 0 12px 0;font-size:1.1rem}
+        .group{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e2e8f0}
+        label{display:block;font-weight:600;margin-bottom:6px}
+        .upload{border:2px dashed #cbd5e1;padding:14px;border-radius:8px;text-align:center;cursor:pointer;background:#fff}
+        .upload p{margin:6px 0 0;color:#64748b;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .slider{display:flex;align-items:center;gap:8px}
+        input[type=range]{flex:1}
+        .btn{width:100%;padding:10px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .preview{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(45deg,#14202b 25%,transparent 25%),linear-gradient(-45deg,#14202b 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#14202b 75%),linear-gradient(-45deg,transparent 75%,#14202b 75%);background-size:20px 20px}
+        canvas{max-width:100%;max-height:100%;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+        .row{display:flex;gap:8px}
+        .small{padding:8px}
+        .hint{font-size:12px;color:#64748b}
+        .toggle{display:flex;align-items:center;gap:8px}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div>
+            <h2>集成图像处理管线</h2>
+
+            <div id="steps-container">
+                <!-- Step 0: 上传原始 -->
+                <div class="step" data-step="0">
+                    <div class="group">
+                        <label>上传原始图片（将作为管线输入）</label>
+                        <div class="upload" id="trigger-main"><strong>选择图片</strong><p id="main-name">未选择文件</p></div>
+                        <input id="main-file" type="file" accept="image/*" style="display:none">
+                        <p class="hint">注：可选择 PNG/WebP/JPG。处理后以原始文件名（不含扩展）作为下载名，输出 PNG。</p>
+                    </div>
+                    <div class="row" style="margin-top:8px">
+                        <button class="btn prev-btn" disabled>上一步</button>
+                        <button class="btn next-btn">下一步</button>
+                    </div>
+                </div>
+
+                <!-- Step 1: Matting -->
+                <div class="step" data-step="1" style="display:none">
+                    <div class="group">
+                        <label>步骤 A — 抠图（Matting）</label>
+                        <div class="row">
+                            <select id="mat-mode"><option value="white">单白底（默认）</option><option value="black">单黑底</option><option value="dual">双背景（需上传背景）</option></select>
+                        </div>
+                        <div style="margin-top:8px" id="dual-area">
+                            <label>（仅双背景模式）上传背景参照图</label>
+                            <div class="upload" id="trigger-bg"><strong>选择背景图</strong><p id="bg-name">未选择</p></div>
+                            <input id="bg-file" type="file" accept="image/*" style="display:none">
+                        </div>
+                        <div style="margin-top:8px" class="slider">
+                            <label style="width:70px">容差</label>
+                            <input id="mat-tol" type="range" min="1" max="100" value="20"><span id="mat-tol-v" class="small">20</span>
+                        </div>
+                        <div class="toggle" style="margin-top:8px"><input id="skip-mat" type="checkbox"><label for="skip-mat">跳过抠图（直接使用原图）</label></div>
+                    </div>
+                    <div class="row" style="margin-top:8px">
+                        <button class="btn prev-btn">上一步</button>
+                        <button class="btn next-btn">下一步</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Stack -->
+                <div class="step" data-step="2" style="display:none">
+                    <div class="group">
+                        <label>步骤 B — 图层原位堆叠（Alpha Stacker）</label>
+                        <div class="slider"><label style="width:70px">层数</label><input id="stack-count" type="range" min="1" max="30" value="5"><span id="stack-count-v" class="small">5</span></div>
+                        <div class="toggle" style="margin-top:8px"><input id="skip-stack" type="checkbox"><label for="skip-stack">跳过堆叠</label></div>
+                    </div>
+                    <div class="row" style="margin-top:8px">
+                        <button class="btn prev-btn">上一步</button>
+                        <button class="btn next-btn">下一步</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Erosion -->
+                <div class="step" data-step="3" style="display:none">
+                    <div class="group">
+                        <label>步骤 C — 边缘侵蚀（Erosion）</label>
+                        <div class="slider"><label style="width:70px">半径</label><input id="ero-r" type="range" min="0" max="10" step="0.1" value="0"><span id="ero-r-v" class="small">0</span></div>
+                        <div class="toggle" style="margin-top:8px"><input id="skip-ero" type="checkbox"><label for="skip-ero">跳过侵蚀</label></div>
+                    </div>
+                    <div class="row" style="margin-top:8px">
+                        <button class="btn prev-btn">上一步</button>
+                        <button class="btn next-btn">下一步</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Normal Clean -->
+                <div class="step" data-step="4" style="display:none">
+                    <div class="group">
+                        <label>步骤 D — 智能净化（Normal Cleaner）</label>
+                        <div class="slider"><label style="width:70px">Alpha阈值</label><input id="clean-clip" type="range" min="0" max="254" value="120"><span id="clean-clip-v" class="small">120</span></div>
+                        <div class="slider"><label style="width:70px">半径</label><input id="clean-r" type="range" min="0" max="4" step="1" value="2"><span id="clean-r-v" class="small">2</span></div>
+                        <div class="slider"><label style="width:70px">容差</label><input id="clean-tol" type="range" min="5" max="60" step="1" value="20"><span id="clean-tol-v" class="small">20</span></div>
+                        <div class="toggle" style="margin-top:8px"><input id="skip-clean" type="checkbox"><label for="skip-clean">跳过净化</label></div>
+                    </div>
+                    <div class="row" style="margin-top:8px">
+                        <button class="btn prev-btn">上一步</button>
+                        <button class="btn next-btn">下一步</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Vector (optional) -->
+                <div class="step" data-step="5" style="display:none">
+                    <div class="group">
+                        <label>步骤 E（可选） — 矢量极限优化</label>
+                        <div class="slider"><label style="width:70px">阈值</label><input id="vec-clip" type="range" min="0" max="254" value="140"><span id="vec-clip-v" class="small">140</span></div>
+                        <div class="slider"><label style="width:70px">半径</label><input id="vec-r" type="range" min="0" max="8" step="1" value="4"><span id="vec-r-v" class="small">4</span></div>
+                        <div class="slider"><label style="width:70px">容差</label><input id="vec-tol" type="range" min="5" max="160" value="55"><span id="vec-tol-v" class="small">55</span></div>
+                        <div class="slider"><label style="width:70px">吸附</label><input id="vec-snap" type="range" min="0" max="80" value="40"><span id="vec-snap-v" class="small">40</span></div>
+                        <div class="toggle" style="margin-top:8px"><input id="enable-vec" type="checkbox"><label for="enable-vec">启用矢量优化（可选）</label></div>
+                    </div>
+                    <div class="row" style="margin-top:8px">
+                        <button class="btn prev-btn">上一步</button>
+                        <button class="btn next-btn">下一步</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div>
+            <button id="run-btn" class="btn">运行管线并更新预览</button>
+            <button id="download-btn" class="btn" style="margin-top:8px" disabled>下载最终图像</button>
+        </div>
+    </div>
+
+    <div class="preview">
+        <canvas id="out-canvas"></canvas>
+        <div id="loading" style="position:absolute;display:none;align-items:center;justify-content:center"><div style="width:36px;height:36px;border:4px solid #e6eefc;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite"></div></div>
+    </div>
+
+<script>
+// UI wiring
+const mainFile = document.getElementById('main-file'), triggerMain = document.getElementById('trigger-main'), mainName = document.getElementById('main-name');
+const bgFile = document.getElementById('bg-file'), triggerBg = document.getElementById('trigger-bg'), bgName = document.getElementById('bg-name');
+const matMode = document.getElementById('mat-mode'), dualArea = document.getElementById('dual-area'), matTol = document.getElementById('mat-tol'), matTolV = document.getElementById('mat-tol-v');
+const stackCount = document.getElementById('stack-count'), stackCountV = document.getElementById('stack-count-v');
+const eroR = document.getElementById('ero-r'), eroRV = document.getElementById('ero-r-v');
+const cleanClip = document.getElementById('clean-clip'), cleanClipV = document.getElementById('clean-clip-v');
+const cleanR = document.getElementById('clean-r'), cleanRV = document.getElementById('clean-r-v');
+const cleanTol = document.getElementById('clean-tol'), cleanTolV = document.getElementById('clean-tol-v');
+const enableVec = document.getElementById('enable-vec'), vecClip = document.getElementById('vec-clip'), vecClipV = document.getElementById('vec-clip-v');
+const vecR = document.getElementById('vec-r'), vecRV = document.getElementById('vec-r-v');
+const vecTol = document.getElementById('vec-tol'), vecTolV = document.getElementById('vec-tol-v');
+const vecSnap = document.getElementById('vec-snap'), vecSnapV = document.getElementById('vec-snap-v');
+const skipMat = document.getElementById('skip-mat'), skipStack = document.getElementById('skip-stack'), skipEro = document.getElementById('skip-ero'), skipClean = document.getElementById('skip-clean');
+const runBtn = document.getElementById('run-btn'), downloadBtn = document.getElementById('download-btn');
+const canvas = document.getElementById('out-canvas'), ctx = canvas.getContext('2d');
+const loading = document.getElementById('loading');
+let originalFileName = 'output'; let srcImg = null, bgImg = null;
+
+triggerMain.onclick = () => mainFile.click(); triggerBg.onclick = () => bgFile.click();
+mainFile.onchange = async function(){ const f = this.files[0]; if(!f) return; originalFileName = stripExt(f.name); mainName.innerText = f.name; const data = await fileToImage(f); srcImg = data; await fitCanvasTo(srcImg); renderPreviewFromImage(srcImg); downloadBtn.disabled=false; };
+bgFile.onchange = async function(){ const f = this.files[0]; if(!f) return; bgName.innerText = f.name; bgImg = await fileToImage(f); };
+
+matMode.onchange = ()=>{ dualArea.style.display = matMode.value==='dual'? 'block':'none'; runIfAuto(); };
+[matTol,stackCount,eroR,cleanClip,cleanR,cleanTol,vecClip,vecR,vecTol,vecSnap].forEach(el=>el.oninput=(e)=>{const vSpan=document.getElementById(el.id+'-v'); if(vSpan) vSpan.innerText = e.target.value; });
+stackCount.onchange = ()=>renderIfReady();
+runBtn.onclick = ()=>runPipeline();
+
+// Real-time preview: debounce scheduler to avoid overloading CPU
+let runTimer = null;
+function scheduleRun(delay=200){ if(runTimer) clearTimeout(runTimer); runTimer = setTimeout(()=>{ runPipeline(); runTimer = null; }, delay); }
+
+// Attach reactive listeners for immediate preview when controls change
+const reactiveEls = [matTol, matMode, stackCount, eroR, cleanClip, cleanR, cleanTol, vecClip, vecR, vecTol, vecSnap, skipMat, skipStack, skipEro, skipClean, enableVec];
+reactiveEls.forEach(el=>{ if(!el) return; el.addEventListener('input', ()=> scheduleRun()); el.addEventListener('change', ()=> scheduleRun()); });
+
+// File uploads should trigger preview fast
+mainFile.addEventListener('change', ()=> scheduleRun(50));
+bgFile.addEventListener('change', ()=> scheduleRun(50));
+
+// Also trigger preview when navigating steps (next/prev buttons)
+document.addEventListener('click', (e) => {
+    if (e.target.classList && (e.target.classList.contains('next-btn') || e.target.classList.contains('prev-btn'))) {
+        // small delay so DOM updates complete
+        setTimeout(()=> scheduleRun(120), 80);
+    }
+});
+
+// Expose quick manual run shortcut
+window.scheduleRun = scheduleRun;
+
+// Step navigation (每个步骤有 上一步 / 下一步)
+let currentStep = 0;
+const stepEls = Array.from(document.querySelectorAll('#steps-container .step'));
+const totalSteps = stepEls.length;
+function showStep(n){
+    currentStep = Math.max(0, Math.min(n, totalSteps - 1));
+    stepEls.forEach((el, idx) => { el.style.display = (idx === currentStep) ? 'block' : 'none'; });
+    // 更新 URL hash（便于分享/调试）
+    try { history.replaceState && history.replaceState(null, '', '#step' + currentStep); } catch(e){}
+}
+
+// 事件代理处理按钮点击
+document.addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('next-btn')) {
+        showStep(currentStep + 1);
+    } else if (e.target.classList && e.target.classList.contains('prev-btn')) {
+        showStep(currentStep - 1);
+    }
+});
+
+// 初始化显示第一步或 hash 指定的步骤
+(function(){ const m = window.location.hash.match(/step(\d+)/); if(m){ const idx = parseInt(m[1],10); if(!isNaN(idx)) currentStep = Math.max(0, Math.min(idx, totalSteps-1)); }
+    showStep(currentStep);
+})();
+
+function stripExt(name){ return name.replace(/\.[^.]+$/,''); }
+function fileToImage(file){ return new Promise((res)=>{ const r=new FileReader(); r.onload=e=>{ const im=new Image(); im.onload=()=>res(im); im.src=e.target.result; }; r.readAsDataURL(file); }); }
+async function fitCanvasTo(img){ canvas.width = img.width; canvas.height = img.height; }
+function renderPreviewFromImage(img){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }
+function runIfAuto(){ /* placeholder if auto-run desired */ }
+function renderIfReady(){ if(srcImg) runPipeline(); }
+
+// Pipeline helpers: ImageData in/out
+function copyImageData(src){ const out = new ImageData(new Uint8ClampedArray(src.data), src.width, src.height); return out; }
+
+// Matting: accepts source ImageData and optional bg ImageData, returns ImageData with alpha
+function mattingProcess(srcImgEl, bgImgEl, mode, tol){ // work on canvas
+    const w = srcImgEl.width, h = srcImgEl.height;
+    const c = document.createElement('canvas'); c.width=w;c.height=h; const cx=c.getContext('2d'); cx.drawImage(srcImgEl,0,0);
+    const d1 = cx.getImageData(0,0,w,h).data;
+    let d2 = null;
+    if(mode==='dual' && bgImgEl){ const c2=document.createElement('canvas'); c2.width=w;c2.height=h; const cx2=c2.getContext('2d'); cx2.drawImage(bgImgEl,0,0,w,h); d2 = cx2.getImageData(0,0,w,h).data; }
+    const out = cx.createImageData(w,h); const o=out.data; const tolNorm = tol/255;
+    for(let i=0;i<d1.length;i+=4){ let r=d1[i],g=d1[i+1],b=d1[i+2],a=255;
+        if(mode==='dual' && d2){ let alpha = 1.0 - (Math.max(0, d2[i]-r, d2[i+1]-g, d2[i+2]-b) / 255); alpha = Math.max(0, Math.min(1, alpha)); a = alpha*255; if(alpha>0.02){ r/=alpha; g/=alpha; b/=alpha; } }
+        else if(mode==='white'){ const dist = (765 - (r+g+b)) / 765; a = dist < tolNorm ? 0 : ((dist - tolNorm) / (1 - tolNorm)) * 255; }
+        else if(mode==='black'){ const dist = (r+g+b) / 765; a = dist < tolNorm ? 0 : ((dist - tolNorm) / (1 - tolNorm)) * 255; }
+        o[i]=r; o[i+1]=g; o[i+2]=b; o[i+3]=Math.round(a);
+    }
+    return out;
+}
+
+// Alpha Stacker: composite same image N times to solidify
+function alphaStack(imageData, layers){ const w=imageData.width,h=imageData.height; const c=document.createElement('canvas'); c.width=w;c.height=h; const cx=c.getContext('2d'); const tmp = new ImageData(new Uint8ClampedArray(imageData.data), w, h); cx.putImageData(tmp,0,0);
+    cx.globalCompositeOperation='source-over'; for(let i=1;i<layers;i++){ cx.drawImage(c,0,0); /* drawing canvas onto itself is fine */ }
+    return cx.getImageData(0,0,w,h);
+}
+
+// Erosion: compute min alpha in neighborhood radius (fast integer radius)
+function erosionProcess(imageData, radius){ const w=imageData.width,h=imageData.height, src=imageData.data; const out = new ImageData(w,h); const o=out.data; const alphas = new Float32Array(w*h);
+    for(let i=0,pi=0;i<src.length;i+=4,pi++){ alphas[pi] = src[i+3]/255; }
+    if(radius<=0){ out.data.set(src); return out; }
+    const rF=Math.floor(radius), rC=Math.ceil(radius), f=radius-rF;
+    function getMinA(x,y,r){ if(r<=0) return alphas[y*w+x]; let min=1; const base=y*w+x; if(x>0 && alphas[base-1]===0) return 0; if(x<w-1 && alphas[base+1]===0) return 0; if(y>0 && alphas[base-w]===0) return 0; if(y<h-1 && alphas[base+w]===0) return 0; for(let dy=-r;dy<=r;dy++){ const ny=y+dy; if(ny<0||ny>=h) continue; const row=ny*w; for(let dx=-r;dx<=r;dx++){ const nx=x+dx; if(nx<0||nx>=w) continue; const a=alphas[row+nx]; if(a<min) min=a; if(min===0) return 0; }} return min; }
+    for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const i=(y*w+x)*4; if(alphas[y*w+x]===0){ o[i+3]=0; o[i]=src[i]; o[i+1]=src[i+1]; o[i+2]=src[i+2]; continue; } const aF=getMinA(x,y,rF); const aC=(rF===rC)?aF:getMinA(x,y,rC); const finalA=aF*(1-f)+aC*f; o[i]=src[i]; o[i+1]=src[i+1]; o[i+2]=src[i+2]; o[i+3]=Math.round(finalA*255); }}
+    return out;
+}
+
+// Normal Cleaner: alpha clip + mild neighborhood average based on color tolerance
+function normalClean(imageData, clip, r, tol){ const w=imageData.width,h=imageData.height, src=new Uint8ClampedArray(imageData.data); const out=new ImageData(w,h); const o=out.data; // step1 clip
+    for(let i=0;i<src.length;i+=4) if(src[i+3]<clip) src[i+3]=0;
+    if(r>0){ const tolSq = tol*tol*3; for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const idx=(y*w+x)*4; if(src[idx+3]===0){ o[idx+3]=0; o[idx]=src[idx]; o[idx+1]=src[idx+1]; o[idx+2]=src[idx+2]; continue; } let sR=0,sG=0,sB=0,sA=0,cnt=0; for(let dy=-r;dy<=r;dy++){ const ny=y+dy; if(ny<0||ny>=h) continue; for(let dx=-r;dx<=r;dx++){ const nx=x+dx; if(nx<0||nx>=w) continue; const nIdx=(ny*w+nx)*4; if(src[nIdx+3]===0) continue; if( (src[nIdx]-src[idx])**2 + (src[nIdx+1]-src[idx+1])**2 + (src[nIdx+2]-src[idx+2])**2 <= tolSq){ sR+=src[nIdx]; sG+=src[nIdx+1]; sB+=src[nIdx+2]; sA+=src[nIdx+3]; cnt++; } } } if(cnt>0){ o[idx]=Math.round(sR/cnt); o[idx+1]=Math.round(sG/cnt); o[idx+2]=Math.round(sB/cnt); o[idx+3]=Math.round(sA/cnt); } else { o[idx]=src[idx]; o[idx+1]=src[idx+1]; o[idx+2]=src[idx+2]; o[idx+3]=src[idx+3]; } } } } else { out.data.set(src); }
+    return out;
+}
+
+// Vector optimizer: harden alpha, large-region merge and snapping
+function vectorOptimize(imageData, clip, r, tol, snap){ const w=imageData.width,h=imageData.height; const src=new Uint8ClampedArray(imageData.data); const out=new ImageData(w,h); const o=out.data; // 1. clip & harden
+    for(let i=0;i<src.length;i+=4){ if(src[i+3]<clip) src[i+3]=0; else src[i+3]=255; }
+    // 2. merge similar neighborhoods
+    const tolSq = tol*tol*3; for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const idx=(y*w+x)*4; if(src[idx+3]===0){ o[idx+3]=0; continue; } let sR=0,sG=0,sB=0,cnt=0; for(let dy=-r;dy<=r;dy++){ const ny=y+dy; if(ny<0||ny>=h) continue; for(let dx=-r;dx<=r;dx++){ const nx=x+dx; if(nx<0||nx>=w) continue; const nIdx=(ny*w+nx)*4; if(src[nIdx+3]===0) continue; if( (src[nIdx]-src[idx])**2 + (src[nIdx+1]-src[idx+1])**2 + (src[nIdx+2]-src[idx+2])**2 <= tolSq){ sR+=src[nIdx]; sG+=src[nIdx+1]; sB+=src[nIdx+2]; cnt++; } } } if(cnt>0){ o[idx]=Math.round(sR/cnt); o[idx+1]=Math.round(sG/cnt); o[idx+2]=Math.round(sB/cnt); o[idx+3]=255; } else { o[idx]=src[idx]; o[idx+1]=src[idx+1]; o[idx+2]=src[idx+2]; o[idx+3]=255; } } }
+    // 3. snapping palette
+    if(snap>0){ const snapSq = snap*snap*3; const palette=[]; for(let i=0;i<o.length;i+=4){ if(o[i+3]===0) continue; const rV=o[i],gV=o[i+1],bV=o[i+2]; let found=false; for(let j=0;j<palette.length;j++){ const p=palette[j]; if((p[0]-rV)**2+(p[1]-gV)**2+(p[2]-bV)**2<=snapSq){ o[i]=p[0]; o[i+1]=p[1]; o[i+2]=p[2]; found=true; break; } } if(!found && palette.length<1024) palette.push([rV,gV,bV]); }
+    }
+    return out;
+}
+
+// Run full pipeline
+async function runPipeline(){ if(!srcImg){ alert('请先上传原始图片'); return; } loading.style.display='flex'; try{ // step0 ensure canvas sized
+    await fitCanvasTo(srcImg);
+    // start with matting or original
+    let current = ctx.getImageData(0,0,canvas.width,canvas.height);
+    if(!skipMat.checked){ const mode = matMode.value; const tol = parseInt(matTol.value); const matOut = mattingProcess(srcImg, bgImg, mode, tol); current = matOut; }
+    else { // use original image pixels
+        const tmpC=document.createElement('canvas'); tmpC.width=srcImg.width; tmpC.height=srcImg.height; tmpC.getContext('2d').drawImage(srcImg,0,0);
+        current = tmpC.getContext('2d').getImageData(0,0,srcImg.width,srcImg.height);
+    }
+    // stack
+    if(!skipStack.checked){ const layers=parseInt(stackCount.value); current = alphaStack(current, layers); }
+    // erosion
+    if(!skipEro.checked){ const er=parseFloat(eroR.value); current = erosionProcess(current, er); }
+    // normal clean
+    if(!skipClean.checked){ current = normalClean(current, parseInt(cleanClip.value), parseInt(cleanR.value), parseInt(cleanTol.value)); }
+    // optional vector
+    if(enableVec.checked){ current = vectorOptimize(current, parseInt(vecClip.value), parseInt(vecR.value), parseInt(vecTol.value), parseInt(vecSnap.value)); }
+
+    // put to canvas
+    canvas.width = current.width; canvas.height = current.height; ctx.putImageData(current,0,0);
+    downloadBtn.disabled = false;
+ }finally{ loading.style.display='none'; }
+}
+
+// download final with original base name + .png
+downloadBtn.onclick = ()=>{ const a=document.createElement('a'); a.href = canvas.toDataURL('image/png'); a.download = originalFileName + '.png'; a.click(); };
+
+// util: draw initial source when available
+async function initialDraw(){ if(srcImg){ await fitCanvasTo(srcImg); ctx.drawImage(srcImg,0,0); } }
+
+// when main image is loaded earlier, preview already drawn. Ensure preview kept.
+
+// small helper to run pipeline on change
+function renderIfReady(){ if(srcImg) runPipeline(); }
+
+// ensure initial state
+initialDraw();
+
+// keyboard: run on Ctrl+Enter
+window.addEventListener('keydown', e=>{ if(e.ctrlKey && e.key==='Enter') runPipeline(); });
+
+</script>
+</body>
+</html>
