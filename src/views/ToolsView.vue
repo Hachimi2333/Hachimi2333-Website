@@ -38,18 +38,19 @@ const iconMap: Record<string, typeof Image> = {
   <div class="container mx-auto max-w-4xl px-4 py-8">
     <div class="mb-8">
       <h1 class="text-3xl font-bold tracking-tight">工具</h1>
+      <p class="text-muted-foreground mt-1">实用小工具，提升工作效率</p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Card
         v-for="tool in tools"
         :key="tool.name"
-        :class="tool.route ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''"
+        :class="tool.route ? 'cursor-pointer' : ''"
         @click="tool.route && router.push(tool.route)"
       >
         <CardContent class="p-5">
           <div class="flex items-center gap-2.5 mb-2">
-            <component :is="iconMap[tool.name] || Wrench" class="h-4 w-4 text-muted-foreground shrink-0" />
+            <component :is="iconMap[tool.name] || Wrench" class="h-5 w-5 text-muted-foreground shrink-0" />
             <h3 class="font-medium truncate">{{ tool.name }}</h3>
           </div>
           <p class="text-sm text-muted-foreground line-clamp-2">{{ tool.description }}</p>

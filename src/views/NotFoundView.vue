@@ -8,7 +8,7 @@ const router = useRouter()
 
 <template>
   <div class="flex-1 flex items-center justify-center">
-    <div class="text-center space-y-6">
+    <div class="text-center space-y-6 px-4">
       <p class="text-8xl font-bold text-muted-foreground/30 select-none">404</p>
       <p class="text-lg font-medium">页面不存在</p>
       <div class="flex justify-center">

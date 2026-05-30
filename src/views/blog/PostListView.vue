@@ -3,11 +3,11 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Search, Calendar, FolderOpen, FileText, Archive, Tag } from 'lucide-vue-next'
 import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
+import { formatDate, formatMonthDay } from '@/lib/date'
 
 const router = useRouter()
 const activeTab = ref('articles')
@@ -24,19 +24,6 @@ const filteredPosts = computed(() => {
 
 const yearArchives = computed(() => getArchivesByYear())
 
-function formatDate(date: string) {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-function formatMonthDay(date: string) {
-  if (!date) return ''
-  const d = new Date(date)
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${m}-${day}`
-}
-
 function extractDescription(post: { description: string; content: string }): string {
   if (post.description) return post.description
   const lines = post.content
@@ -46,7 +33,6 @@ function extractDescription(post: { description: string; content: string }): str
   const first = lines[0] || ''
   return first.replace(/\*\*|__|\*|_|\[.*?\]\(.*?\)|`{1,3}/g, '').slice(0, 120)
 }
-
 </script>
 
 <template>
@@ -84,20 +70,20 @@ function extractDescription(post: { description: string; content: string }): str
 
       <!-- Articles Tab -->
       <TabsContent value="articles">
-        <div class="space-y-5 mt-4">
+        <div class="space-y-4 mt-4">
           <Card
             v-for="post in filteredPosts"
             :key="post.slug"
-            class="group cursor-pointer hover:shadow-md transition-all duration-200 overflow-hidden"
+            class="group cursor-pointer overflow-hidden"
             @click="router.push(`/posts/${post.slug}`)"
           >
             <div class="md:flex">
-              <div class="flex-1 flex flex-col p-6 min-w-0">
-                <h2 class="text-xl font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2">
+              <div class="flex-1 flex flex-col p-5 min-w-0">
+                <h2 class="text-lg font-semibold leading-snug line-clamp-2 mb-2">
                   {{ post.title }}
                 </h2>
 
-                <div class="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                <div class="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                   <span class="inline-flex items-center gap-1">
                     <Calendar class="h-3.5 w-3.5 shrink-0" />
                     {{ formatDate(post.published) }}
@@ -120,19 +106,19 @@ function extractDescription(post: { description: string; content: string }): str
                   </Badge>
                 </div>
 
-                <p class="text-sm text-muted-foreground mt-3 line-clamp-2 leading-relaxed">
+                <p class="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
                   {{ extractDescription(post) }}
                 </p>
               </div>
 
               <div
                 v-if="post.image"
-                class="md:w-64 shrink-0 overflow-hidden"
+                class="md:w-56 shrink-0 overflow-hidden"
               >
                 <img
                   :src="post.image"
                   :alt="post.title"
-                  class="w-full h-48 md:h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  class="w-full h-48 md:h-full object-cover"
                   loading="lazy"
                 />
               </div>
@@ -153,13 +139,13 @@ function extractDescription(post: { description: string; content: string }): str
           <div v-for="group in yearArchives" :key="group.year">
             <!-- Year header -->
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-3 h-3 rounded-full bg-primary"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
               <h3 class="text-lg font-semibold text-foreground">{{ group.label }}年</h3>
               <Badge variant="outline" class="font-normal">{{ group.posts.length }} 篇</Badge>
             </div>
 
             <!-- Posts in this year -->
-            <div class="space-y-1 ml-4 border-l-2 border-border pl-5 pb-2">
+            <div class="space-y-1 ml-3.5 border-l-2 border-border pl-5 pb-2">
               <div
                 v-for="post in group.posts"
                 :key="post.slug"
@@ -167,10 +153,10 @@ function extractDescription(post: { description: string; content: string }): str
                 @click="router.push(`/posts/${post.slug}`)"
               >
                 <!-- Timeline dot -->
-                <div class="absolute -left-[1.55rem] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-border group-hover:bg-primary transition-colors ring-2 ring-background"></div>
+                <div class="absolute -left-[1.45rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors ring-2 ring-background"></div>
 
                 <span class="text-xs text-muted-foreground font-mono w-12 shrink-0">{{ formatMonthDay(post.published) }}</span>
-                <span class="text-sm font-medium text-foreground group-hover:text-primary transition-colors min-w-0 truncate">
+                <span class="text-sm font-medium text-foreground min-w-0 truncate">
                   {{ post.title }}
                 </span>
                 <div class="flex items-center gap-1 shrink-0 ml-auto">
@@ -195,24 +181,10 @@ function extractDescription(post: { description: string; content: string }): str
         </div>
       </TabsContent>
     </Tabs>
-
-
   </div>
 </template>
 
 <style scoped>
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .search-fade-enter-active,
 .search-fade-leave-active {
   transition: opacity 0.15s ease, transform 0.15s ease;

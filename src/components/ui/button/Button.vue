@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
+import { type HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
 
 const props = withDefaults(defineProps<{
@@ -11,11 +11,6 @@ const props = withDefaults(defineProps<{
   variant: 'default',
   size: 'default',
   as: 'button',
-})
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-  return delegated
 })
 
 const variantClasses = {
@@ -37,14 +32,13 @@ const sizeClasses = {
 
 <template>
   <component
-    :is="as"
+    :is="props.as"
     :class="cn(
       'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-      variantClasses[variant],
-      sizeClasses[size],
+      variantClasses[props.variant],
+      sizeClasses[props.size],
       props.class,
     )"
-    v-bind="delegatedProps"
   >
     <slot />
   </component>

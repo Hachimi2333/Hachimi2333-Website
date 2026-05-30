@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Card, CardContent } from '@/components/ui/card'
-
 import { Button } from '@/components/ui/button'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb'
 import { Calendar, Tag, FolderOpen, ArrowLeft, Clock } from 'lucide-vue-next'
 import { getPostBySlug } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
+import { formatDate } from '@/lib/date'
 import ImageLightbox from '@/components/ui/ImageLightbox.vue'
 import type { BlogPost } from '@/types/blog'
 
@@ -31,18 +31,18 @@ function closeLightbox() {
   lightboxVisible.value = false
 }
 
-function bindImageClicks() {
-  nextTick(() => {
-    const article = document.querySelector('.prose')
-    if (!article) return
-    const images = article.querySelectorAll('img')
-    images.forEach((img) => {
-      img.style.cursor = 'zoom-in'
-      img.addEventListener('click', () => {
-        openLightbox(img.src, img.alt || undefined)
-      })
-    })
-  })
+function handleArticleClick(e: MouseEvent) {
+  const target = e.target as HTMLElement
+  const img = target.closest('img')
+  if (img && img.closest('.prose')) {
+    openLightbox(img.src, img.alt || undefined)
+  }
+}
+
+function updateReadingTime(content: string) {
+  const charCount = content.length
+  const minutes = Math.max(1, Math.ceil(charCount / 400))
+  readingTime.value = `${minutes} 分钟`
 }
 
 function loadPost() {
@@ -51,34 +51,16 @@ function loadPost() {
   if (post.value) {
     document.title = `${post.value.title} - Hachimi2333`
     renderedContent.value = renderMarkdown(post.value.content)
-    const charCount = post.value.content.length
-    const minutes = Math.max(1, Math.ceil(charCount / 400))
-    readingTime.value = `${minutes} 分钟`
+    updateReadingTime(post.value.content)
   } else {
     document.title = '文章未找到 - Hachimi2333'
   }
 }
 
-function formatDate(date: string) {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-onMounted(async () => {
-  loadPost()
-  await highlightCode()
-  bindImageClicks()
-})
-
-watch(() => route.params.slug, () => {
-  loadPost()
-  highlightCode()
-  bindImageClicks()
-})
-
 async function highlightCode() {
   try {
     const { codeToHtml } = await import('shiki')
+    await new Promise(resolve => setTimeout(resolve, 50))
     const codeBlocks = document.querySelectorAll('pre code.shiki-code')
     for (const block of codeBlocks) {
       const lang = Array.from(block.classList)
@@ -86,9 +68,10 @@ async function highlightCode() {
         ?.replace('language-', '') || 'text'
       const text = block.textContent || ''
       try {
+        const isDark = document.documentElement.classList.contains('dark')
         const html = await codeToHtml(text, {
           lang,
-          theme: 'github-light',
+          theme: isDark ? 'github-dark' : 'github-light',
         })
         const pre = block.parentElement
         if (pre) {
@@ -102,6 +85,16 @@ async function highlightCode() {
     // Shiki not available, keep plain code blocks
   }
 }
+
+onMounted(async () => {
+  loadPost()
+  await highlightCode()
+})
+
+watch(() => route.params.slug, async () => {
+  loadPost()
+  await highlightCode()
+})
 </script>
 
 <template>
@@ -123,7 +116,7 @@ async function highlightCode() {
       </Breadcrumb>
 
       <!-- Post Header -->
-      <header class="mb-8">
+      <header class="mb-6 pb-6 border-b">
         <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">{{ post.title }}</h1>
         <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <div class="flex items-center gap-1.5">
@@ -145,14 +138,6 @@ async function highlightCode() {
         </div>
       </header>
 
-      <!-- Back button -->
-      <div class="mb-6">
-        <Button variant="ghost" @click="router.push('/posts')">
-          <ArrowLeft class="mr-2 h-4 w-4" />
-          返回文章列表
-        </Button>
-      </div>
-
       <!-- Post Content -->
       <Card>
         <CardContent class="pt-6">
@@ -163,13 +148,20 @@ async function highlightCode() {
               :alt="post.title"
               class="w-full max-h-96 object-cover cursor-zoom-in"
               loading="lazy"
-              @click="openLightbox(post.image, post.title)"
             />
           </div>
 
-          <article class="prose max-w-none" v-html="renderedContent" />
+          <article class="prose max-w-none" v-html="renderedContent" @click="handleArticleClick" />
         </CardContent>
       </Card>
+
+      <!-- Back to list -->
+      <div class="mt-6 pt-6 border-t">
+        <Button variant="ghost" @click="router.push('/posts')">
+          <ArrowLeft class="mr-2 h-4 w-4" />
+          返回文章列表
+        </Button>
+      </div>
     </template>
 
     <!-- Not found -->

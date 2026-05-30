@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
 import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown } from 'lucide-vue-next'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -22,7 +23,7 @@ const isUsingUploadedImage = computed(() => uploadedImageData.value !== null)
 
 const iconSize = ref(360)
 const colorMode = ref<'original' | 'custom'>('original')
-const customColor = ref('#3b82f6')
+const customColor = ref('#2563eb')
 const iconInfoText = ref('未选择图标')
 const filename = ref('article-cover')
 const exportFormat = ref<'png' | 'webp'>('png')
@@ -55,43 +56,6 @@ function clearCanvas() {
   if (!ctx || !canvas) return
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
-}
-
-function applyColorToSvg(svgString: string, color: string): string {
-  if (!color || !svgString) return svgString
-  try {
-    const parser = new DOMParser()
-    const svgDoc = parser.parseFromString(svgString, 'image/svg+xml')
-    const svgElement = svgDoc.documentElement
-    if (svgElement.tagName !== 'svg') return svgString
-
-    function setFillRecursive(element: Element) {
-      if (element.tagName === 'defs' || element.tagName === 'style' || element.tagName === 'script') return
-      const fill = element.getAttribute('fill')
-      if (fill !== null && fill !== 'none') {
-        element.setAttribute('fill', color)
-      }
-      for (let i = 0; i < element.children.length; i++) {
-        setFillRecursive(element.children[i])
-      }
-    }
-    setFillRecursive(svgElement)
-
-    const allElements = svgElement.querySelectorAll('*')
-    allElements.forEach(el => {
-      if (el.tagName !== 'defs' && el.tagName !== 'style' && el.tagName !== 'script') {
-        const fill = el.getAttribute('fill')
-        if (fill !== null && fill !== 'none') {
-          el.setAttribute('fill', color)
-        }
-      }
-    })
-
-    const serializer = new XMLSerializer()
-    return serializer.serializeToString(svgElement)
-  } catch {
-    return svgString
-  }
 }
 
 function drawCanvas() {
@@ -172,7 +136,7 @@ function drawCanvas() {
   img.src = url
 }
 
-function loadIconByName(iconName: string) {
+async function loadIconByName(iconName: string) {
   if (!iconName) return
   if (isUsingUploadedImage.value) {
     clearUploadedImage()
@@ -180,58 +144,33 @@ function loadIconByName(iconName: string) {
   searchStatus.value = '加载中...'
   currentIconName.value = iconName
 
-  fetch(`https://api.iconify.design/${iconName}.svg`)
-    .then(res => {
-      if (!res.ok) throw new Error(`图标不存在 (${res.status})`)
-      return res.text()
-    })
-    .then(svg => {
-      currentIconSvg.value = svg
-      searchStatus.value = `已加载: ${iconName}`
-      nextTick(() => drawCanvas())
-    })
-    .catch(err => {
-      searchStatus.value = `加载失败: ${err.message}`
-      currentIconSvg.value = null
-      currentIconName.value = ''
-      nextTick(() => drawCanvas())
-    })
-}
-
-async function searchIcons(query: string) {
-  if (!query.trim()) {
-    searchResults.value = []
-    return
-  }
-  searchLoading.value = true
-  searchStatus.value = '搜索中...'
-
   try {
-    const res = await fetch(`https://api.iconify.design/search?query=${encodeURIComponent(query)}&limit=30`)
-    const data = await res.json()
-    const icons = data.icons || []
-    searchResults.value = icons
-    if (icons.length === 0) {
-      searchStatus.value = '无结果'
-    } else {
-      searchStatus.value = `找到 ${icons.length} 个图标`
-    }
-  } catch {
-    searchStatus.value = '搜索出错'
-    searchResults.value = []
-  } finally {
-    searchLoading.value = false
+    const svg = await fetchIconSvg(iconName)
+    currentIconSvg.value = svg
+    searchStatus.value = `已加载: ${iconName}`
+    nextTick(() => drawCanvas())
+  } catch (err) {
+    searchStatus.value = `加载失败: ${err instanceof Error ? err.message : '未知错误'}`
+    currentIconSvg.value = null
+    currentIconName.value = ''
+    nextTick(() => drawCanvas())
   }
 }
 
-function onSearch() {
+async function onSearch() {
   const query = searchQuery.value.trim()
+  searchLoading.value = true
+  searchResults.value = []
+  searchStatus.value = ''
+
   if (query.includes(':') && !query.includes(' ')) {
-    loadIconByName(query)
-    searchIcons(query)
-  } else {
-    searchIcons(query)
+    await loadIconByName(query)
   }
+
+  const result = await searchIcons(query)
+  searchResults.value = result.icons
+  searchStatus.value = result.status
+  searchLoading.value = false
 }
 
 function selectIcon(iconName: string) {
@@ -301,7 +240,7 @@ function resetAll() {
   searchQuery.value = ''
   iconSize.value = 360
   colorMode.value = 'original'
-  customColor.value = '#3b82f6'
+  customColor.value = '#2563eb'
   filename.value = 'article-cover'
   exportFormat.value = 'png'
   showFormatMenu.value = false
@@ -331,10 +270,6 @@ function exportCanvas(format: 'png' | 'webp') {
     link.click()
     URL.revokeObjectURL(link.href)
   }, mime, 1)
-}
-
-function getSearchIconUrl(iconName: string): string {
-  return `https://api.iconify.design/${iconName}.svg`
 }
 
 onMounted(() => {

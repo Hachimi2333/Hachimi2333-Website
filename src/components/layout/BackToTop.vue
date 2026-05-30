@@ -1,35 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch } from 'vue'
+import { useWindowScroll } from '@vueuse/core'
 import { ChevronUp } from 'lucide-vue-next'
 
+const { y } = useWindowScroll()
 const show = ref(false)
 
-function handleScroll() {
-  show.value = window.scrollY > 300
-}
+watch(y, (val) => {
+  show.value = val > 300
+})
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
 </script>
 
 <template>
   <Transition name="back-to-top">
     <button
       v-show="show"
-      class="fixed bottom-8 right-[max(1rem,calc((100vw-896px)/2-4rem))] z-50 flex items-center justify-center w-12 h-12 rounded-xl bg-background border border-border shadow-md hover:bg-accent transition-colors duration-200"
+      class="fixed bottom-8 right-4 sm:right-8 z-50 flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border shadow-sm hover:bg-accent transition-colors"
       @click="scrollToTop"
       aria-label="回到顶部"
     >
-      <ChevronUp class="w-6 h-6 text-foreground" />
+      <ChevronUp class="w-5 h-5 text-foreground" />
     </button>
   </Transition>
 </template>
