@@ -10,7 +10,6 @@ const commitHash = execSync('git rev-parse --short=7 HEAD').toString().trim()
 const commitHashFull = execSync('git rev-parse HEAD').toString().trim()
 const commitSubject = execSync('git log -1 --pretty=%s').toString().trim()
 const commitBody = execSync('git log -1 --pretty=%b').toString().trim()
-const branchName = execSync('git branch --show-current').toString().trim()
 
 // 获取 commit 的增删行数和修改文件数
 const commitStat = execSync('git diff --shortstat HEAD~1 HEAD').toString().trim()
@@ -30,7 +29,7 @@ export default defineConfig({
     __COMMIT_HASH_FULL__: JSON.stringify(commitHashFull),
     __COMMIT_SUBJECT__: JSON.stringify(commitSubject),
     __COMMIT_BODY__: JSON.stringify(commitBody),
-    __BRANCH_NAME__: JSON.stringify(branchName),
+
     __COMMIT_INSERTIONS__: JSON.stringify(insertions),
     __COMMIT_DELETIONS__: JSON.stringify(deletions),
     __FILES_CHANGED__: JSON.stringify(filesChanged),

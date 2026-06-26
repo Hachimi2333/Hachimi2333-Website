@@ -5,7 +5,6 @@ export interface GitInfo {
   hashFull: string
   subject: string
   body: string
-  branch: string
   insertions: number
   deletions: number
   filesChanged: number
@@ -17,7 +16,6 @@ export function useGitInfo() {
     hashFull: __COMMIT_HASH_FULL__,
     subject: __COMMIT_SUBJECT__,
     body: __COMMIT_BODY__,
-    branch: __BRANCH_NAME__,
     insertions: Number(__COMMIT_INSERTIONS__),
     deletions: Number(__COMMIT_DELETIONS__),
     filesChanged: Number(__FILES_CHANGED__),

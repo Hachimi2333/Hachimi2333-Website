@@ -16,12 +16,11 @@ const { gitInfo, commitUrl, formattedBody } = useGitInfo()
     </PopoverTrigger>
     <PopoverContent side="top" :side-offset="8" class="w-80">
       <div class="space-y-3">
-        <!-- Commit Hash & Branch -->
+        <!-- Commit Hash -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <GitCommit class="w-4 h-4 text-muted-foreground" />
             <span class="font-mono text-sm font-medium">{{ gitInfo.hash }}</span>
-            <span class="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{{ gitInfo.branch }}</span>
           </div>
           <a
             :href="commitUrl"
