@@ -31,13 +31,13 @@ const router = createRouter({
     {
       path: '/tools/cover-generator',
       name: 'cover-generator',
-      component: () => import('@/views/tools/CoverGeneratorView.vue'),
+      component: () => import('@/tools/CoverGeneratorView.vue'),
       meta: { title: `文章封面生成器 - ${BASE_TITLE}` },
     },
     {
       path: '/tools/app-icon-generator',
       name: 'app-icon-generator',
-      component: () => import('@/views/tools/AppIconGeneratorView.vue'),
+      component: () => import('@/tools/AppIconGeneratorView.vue'),
       meta: { title: `App 图标生成器 - ${BASE_TITLE}` },
     },
     {

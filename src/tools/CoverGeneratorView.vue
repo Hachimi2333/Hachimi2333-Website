@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton, InputGroupText } from '@/components/ui/input-group'
+import { Slider } from '@/components/ui/slider'
+import { ColorPicker } from '@/components/ui/color-picker'
 import { cn } from '@/lib/utils'
 import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
 import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown } from 'lucide-vue-next'
+import ToolLayout from '@/tools/components/ToolLayout.vue'
+import { getToolById } from '@/tools/manifest'
+
+const tool = getToolById('cover-generator')!
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
@@ -260,7 +266,7 @@ function exportCanvas(format: 'png' | 'webp') {
 
   const mime = format === 'png' ? 'image/png' : 'image/webp'
   let name = filename.value.trim() || 'article-cover'
-  name = name.replace(/[^a-z0-9\u4e00-\u9fa5\-_]/gi, '-')
+  name = name.replace(/[^a-z0-9一-龥\-_]/gi, '-')
 
   canvas.toBlob((blob) => {
     if (!blob) return
@@ -278,31 +284,27 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-4xl px-4 py-8">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold tracking-tight">文章封面生成器</h1>
-    </div>
-
+  <ToolLayout :title="tool.name" :version="tool.version">
     <div class="space-y-6">
       <!-- Preview -->
-      <Card>
-        <div class="aspect-[1920/600] w-full bg-white border-b overflow-hidden rounded-t-xl">
+      <Card class="py-0">
+        <div class="aspect-[1920/600] w-full bg-white border-b">
           <canvas
             ref="canvasRef"
             width="1920"
             height="600"
-            class="w-full h-full cursor-crosshair"
+            class="w-full h-full"
           />
         </div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 sm:px-6 py-3 text-sm text-muted-foreground">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 sm:px-6 py-3 text-sm text-muted-foreground border-t">
           <span class="tabular-nums shrink-0">1920 × 600 px</span>
           <div class="flex items-center gap-2">
-            <div class="relative inline-flex">
-              <Button size="sm" variant="outline" @click="exportCanvas(exportFormat)">
+            <div class="relative inline-flex -space-x-px">
+              <Button size="sm" variant="outline" class="rounded-r-none" @click="exportCanvas(exportFormat)">
                 <Download data-icon="inline-start" />
                 下载 {{ exportFormat.toUpperCase() }}
               </Button>
-              <Button size="sm" variant="outline" @click="toggleFormatMenu">
+              <Button size="sm" variant="outline" class="rounded-l-none px-2" @click="toggleFormatMenu">
                 <ChevronDown />
               </Button>
               <div
@@ -338,8 +340,9 @@ onMounted(() => {
               <Search class="h-4 w-4 text-muted-foreground" />
               图标来源
             </CardTitle>
+            <CardDescription>搜索 Iconify 图标或上传本地图片</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent class="space-y-4">
             <div
               v-if="currentIconName || uploadedImageData"
               class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
@@ -351,7 +354,7 @@ onMounted(() => {
               >{{ iconInfoText }}</span>
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon-sm"
                 class="ml-auto"
                 @click="resetAll"
                 title="清除"
@@ -360,16 +363,18 @@ onMounted(() => {
               </Button>
             </div>
 
-            <div class="flex gap-2">
-              <Input
+            <InputGroup>
+              <InputGroupInput
                 v-model="searchQuery"
                 placeholder="例如: mdi:home, fa:bell..."
                 @keyup.enter="onSearch"
               />
-              <Button size="sm" @click="onSearch" :disabled="searchLoading">
-                <Search />
-              </Button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton size="icon-sm" @click="onSearch" :disabled="searchLoading">
+                  <Search />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
 
             <p
               v-if="searchStatus && !currentIconName && !uploadedImageData"
@@ -426,7 +431,7 @@ onMounted(() => {
                 class="flex items-center justify-between bg-primary/10 rounded-lg px-3 py-2"
               >
                 <span class="text-sm truncate">{{ uploadedFileName }}</span>
-                <Button variant="ghost" size="icon" @click="clearUploadedImage">
+                <Button variant="ghost" size="icon-sm" @click="clearUploadedImage">
                   <span class="text-destructive text-lg leading-none">&times;</span>
                 </Button>
               </div>
@@ -441,21 +446,21 @@ onMounted(() => {
               <Maximize2 class="h-4 w-4 text-muted-foreground" />
               显示设置
             </CardTitle>
+            <CardDescription>调整图标大小、颜色与导出选项</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div class="space-y-2">
+          <CardContent class="space-y-5">
+            <!-- Icon Size -->
+            <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm">图标大小</span>
                 <span class="text-sm tabular-nums text-muted-foreground">{{ iconSize }}px</span>
               </div>
-              <input
-                type="range"
-                min="20"
-                max="500"
-                step="2"
-                :value="iconSize"
-                @input="iconSize = +($event.target as HTMLInputElement).value; nextTick(() => drawCanvas())"
-                class="w-full h-1.5 bg-secondary rounded-full appearance-none cursor-pointer accent-primary"
+              <Slider
+                :model-value="[iconSize]"
+                :min="20"
+                :max="500"
+                :step="2"
+                @update:model-value="iconSize = $event?.[0] ?? iconSize; nextTick(() => drawCanvas())"
               />
               <div class="flex justify-between text-xs text-muted-foreground">
                 <span>20</span>
@@ -463,18 +468,17 @@ onMounted(() => {
               </div>
             </div>
 
-            <div v-if="!isUsingUploadedImage" class="space-y-2">
+            <!-- Color Mode -->
+            <div v-if="!isUsingUploadedImage" class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm flex items-center gap-1.5">
                   <Palette class="h-3.5 w-3.5 text-muted-foreground" />
                   图标颜色
                 </span>
-                <input
-                  type="color"
-                  v-model="customColor"
+                <ColorPicker
+                  :model-value="customColor"
                   :disabled="colorMode !== 'custom'"
-                  class="w-7 h-7 rounded-full border border-input cursor-pointer p-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
-                  @input="colorMode === 'custom' && nextTick(() => drawCanvas())"
+                  @update:model-value="customColor = $event; nextTick(() => drawCanvas())"
                 />
               </div>
               <div class="flex gap-4">
@@ -501,17 +505,18 @@ onMounted(() => {
               </div>
             </div>
 
+            <!-- Filename -->
             <div class="space-y-2">
               <span class="text-sm">导出文件名</span>
-              <div class="flex items-center">
-                <Input
+              <InputGroup>
+                <InputGroupInput
                   v-model="filename"
                   placeholder="article-cover"
                 />
-                <span class="inline-flex items-center h-9 px-2.5 rounded-r-md border border-l-0 border-input bg-muted/50 text-xs text-muted-foreground whitespace-nowrap">
-                  .png/.webp
-                </span>
-              </div>
+                <InputGroupAddon align="inline-end">
+                  <InputGroupText>.png/.webp</InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
           </CardContent>
         </Card>
@@ -520,5 +525,5 @@ onMounted(() => {
 
     <!-- Click-outside to close format menu -->
     <div v-if="showFormatMenu" class="fixed inset-0 z-[5]" @click="closeFormatMenu" />
-  </div>
+  </ToolLayout>
 </template>

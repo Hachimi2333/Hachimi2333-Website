@@ -1,60 +1,41 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Card, CardContent } from '@/components/ui/card'
-import { Wrench, Image, AppWindow } from 'lucide-vue-next'
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { tools } from '@/tools/manifest'
 
 const router = useRouter()
-
-interface ToolItem {
-  name: string
-  description: string
-  status: 'coming-soon' | 'development' | 'available'
-  route?: string
-}
-
-const tools = ref<ToolItem[]>([
-  {
-    name: '文章封面生成器',
-    description: '生成文章封面图，支持 Iconify 图标搜索与本地图片上传',
-    status: 'available',
-    route: '/tools/cover-generator',
-  },
-  {
-    name: 'App 图标生成器',
-    description: '制作 App 图标，支持自定义颜色与导出 PNG',
-    status: 'available',
-    route: '/tools/app-icon-generator',
-  },
-])
-
-const iconMap: Record<string, typeof Image> = {
-  'App 图标生成器': AppWindow,
-  '文章封面生成器': Image,
-}
 </script>
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <div class="mb-8">
+    <div class="mb-6">
       <h1 class="text-3xl font-bold tracking-tight">工具</h1>
-      <p class="text-muted-foreground mt-1">实用小工具，提升工作效率</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Card
         v-for="tool in tools"
-        :key="tool.name"
-        :class="tool.route ? 'cursor-pointer' : ''"
-        @click="tool.route && router.push(tool.route)"
+        :key="tool.id"
+        class="group transition-colors cursor-pointer hover:bg-accent/50"
+        @click="router.push(tool.route)"
       >
-        <CardContent>
-          <div class="flex items-center gap-2.5 mb-2">
-            <component :is="iconMap[tool.name] || Wrench" class="h-5 w-5 text-muted-foreground shrink-0" />
-            <h3 class="font-medium truncate">{{ tool.name }}</h3>
+        <CardHeader>
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <component :is="tool.icon" class="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <CardTitle class="text-base">{{ tool.name }}</CardTitle>
+                <CardDescription class="mt-1">{{ tool.description }}</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline" class="shrink-0 text-xs">
+              {{ tool.version }}
+            </Badge>
           </div>
-          <p class="text-sm text-muted-foreground line-clamp-2">{{ tool.description }}</p>
-        </CardContent>
+        </CardHeader>
       </Card>
     </div>
   </div>

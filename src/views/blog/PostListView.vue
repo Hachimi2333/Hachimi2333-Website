@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { InputGroup, InputGroupInput, InputGroupAddon } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, Calendar, FolderOpen, FileText, Archive, Tag } from 'lucide-vue-next'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from '@/components/ui/pagination'
+import { Search, Calendar, FolderOpen, FileText, Archive, Tag, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
 import { formatDate, formatMonthDay } from '@/lib/date'
 
@@ -14,12 +21,23 @@ const activeTab = ref('articles')
 const searchQuery = ref('')
 
 const allPosts = getAllPosts()
+const pageSize = 5
+const currentPage = ref(1)
 
 const filteredPosts = computed(() => {
   if (searchQuery.value) {
     return searchPosts(searchQuery.value)
   }
   return allPosts
+})
+
+const paginatedPosts = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredPosts.value.slice(start, start + pageSize)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
 })
 
 const yearArchives = computed(() => getArchivesByYear())
@@ -73,7 +91,7 @@ function extractDescription(post: { description: string; content: string }): str
       <!-- Articles -->
       <div v-if="activeTab === 'articles'" key="articles" class="space-y-4">
       <Card
-        v-for="post in filteredPosts"
+        v-for="post in paginatedPosts"
         :key="post.slug"
         class="cursor-pointer overflow-hidden py-0"
         @click="router.push(`/posts/${post.slug}`)"
@@ -130,6 +148,20 @@ function extractDescription(post: { description: string; content: string }): str
         <p class="text-lg">没有找到相关文章</p>
         <p class="text-sm mt-1">试试其他关键词</p>
       </div>
+
+      <Pagination v-if="filteredPosts.length > pageSize" v-model:page="currentPage" :total="filteredPosts.length" :sibling-count="1" :items-per-page="pageSize" class="mt-6">
+        <PaginationContent v-slot="{ items }">
+          <PaginationPrevious>
+            <ChevronLeft />
+          </PaginationPrevious>
+          <template v-for="(item, index) in items" :key="index">
+            <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === currentPage" />
+          </template>
+          <PaginationNext>
+            <ChevronRight />
+          </PaginationNext>
+        </PaginationContent>
+      </Pagination>
     </div>
 
     <!-- Archives -->
