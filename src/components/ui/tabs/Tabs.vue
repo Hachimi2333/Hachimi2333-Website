@@ -1,48 +1,24 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed, provide, ref, watch } from 'vue'
-import { cn } from '@/lib/utils'
+import type { TabsRootEmits, TabsRootProps } from "reka-ui"
+import type { HTMLAttributes } from "vue"
+import { reactiveOmit } from "@vueuse/core"
+import { TabsRoot, useForwardPropsEmits } from "reka-ui"
+import { cn } from "@/lib/utils"
 
-const props = withDefaults(defineProps<{
-  defaultValue?: string
-  modelValue?: string
-  class?: HTMLAttributes['class']
-}>(), {
-  defaultValue: '',
-})
+const props = defineProps<TabsRootProps & { class?: HTMLAttributes["class"] }>()
+const emits = defineEmits<TabsRootEmits>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
-const activeTab = ref(props.modelValue || props.defaultValue)
-
-watch(() => props.modelValue, (val) => {
-  if (val !== undefined && val !== activeTab.value) {
-    activeTab.value = val
-  }
-})
-
-watch(activeTab, (val) => {
-  emit('update:modelValue', val)
-})
-
-function activateTab(value: string) {
-  activeTab.value = value
-}
-
-provide('activeTab', activeTab)
-provide('activateTab', activateTab)
-
-defineExpose({ activateTab })
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-  return delegated
-})
+const delegatedProps = reactiveOmit(props, "class")
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
 
 <template>
-  <div v-bind="delegatedProps" :class="cn('w-full', props.class)">
-    <slot />
-  </div>
+  <TabsRoot
+    v-slot="slotProps"
+    data-slot="tabs"
+    v-bind="forwarded"
+    :class="cn('flex flex-col gap-2', props.class)"
+  >
+    <slot v-bind="slotProps" />
+  </TabsRoot>
 </template>

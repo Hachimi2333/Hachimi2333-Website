@@ -1,14 +1,21 @@
-<script setup lang="ts">
-import { type HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
+<script lang="ts" setup>
+import type { PrimitiveProps } from "reka-ui"
+import type { HTMLAttributes } from "vue"
+import { Primitive } from "reka-ui"
+import { cn } from "@/lib/utils"
 
-const props = defineProps<{
-  class?: HTMLAttributes['class']
-}>()
+const props = withDefaults(defineProps<PrimitiveProps & { class?: HTMLAttributes["class"] }>(), {
+  as: "a",
+})
 </script>
 
 <template>
-  <a :class="cn('transition-colors hover:text-foreground', props.class)">
+  <Primitive
+    data-slot="breadcrumb-link"
+    :as="as"
+    :as-child="asChild"
+    :class="cn('hover:text-foreground transition-colors', props.class)"
+  >
     <slot />
-  </a>
+  </Primitive>
 </template>

@@ -298,12 +298,12 @@ onMounted(() => {
           <span class="tabular-nums shrink-0">1920 × 600 px</span>
           <div class="flex items-center gap-2">
             <div class="relative inline-flex">
-              <Button size="sm" class="rounded-r-none" variant="outline" @click="exportCanvas(exportFormat)">
-                <Download class="h-3.5 w-3.5 mr-1" />
+              <Button size="sm" variant="outline" @click="exportCanvas(exportFormat)">
+                <Download data-icon="inline-start" />
                 下载 {{ exportFormat.toUpperCase() }}
               </Button>
-              <Button size="sm" class="rounded-l-none px-1.5" variant="outline" @click="toggleFormatMenu">
-                <ChevronDown class="h-3.5 w-3.5" />
+              <Button size="sm" variant="outline" @click="toggleFormatMenu">
+                <ChevronDown />
               </Button>
               <div
                 v-if="showFormatMenu"
@@ -322,8 +322,8 @@ onMounted(() => {
                 >WebP</button>
               </div>
             </div>
-            <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0" @click="resetAll" title="重置">
-              <RotateCcw class="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon" @click="resetAll" title="重置">
+              <RotateCcw />
             </Button>
           </div>
         </div>
@@ -334,12 +334,12 @@ onMounted(() => {
         <!-- Icon Source -->
         <Card>
           <CardHeader>
-            <CardTitle class="text-base flex items-center gap-2">
+            <CardTitle class="flex items-center gap-2">
               <Search class="h-4 w-4 text-muted-foreground" />
               图标来源
             </CardTitle>
           </CardHeader>
-          <CardContent class="space-y-4">
+          <CardContent>
             <div
               v-if="currentIconName || uploadedImageData"
               class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
@@ -352,7 +352,7 @@ onMounted(() => {
               <Button
                 variant="ghost"
                 size="icon"
-                class="h-6 w-6 shrink-0 ml-auto"
+                class="ml-auto"
                 @click="resetAll"
                 title="清除"
               >
@@ -364,11 +364,10 @@ onMounted(() => {
               <Input
                 v-model="searchQuery"
                 placeholder="例如: mdi:home, fa:bell..."
-                class="h-9"
                 @keyup.enter="onSearch"
               />
               <Button size="sm" @click="onSearch" :disabled="searchLoading">
-                <Search class="h-4 w-4" />
+                <Search />
               </Button>
             </div>
 
@@ -427,7 +426,7 @@ onMounted(() => {
                 class="flex items-center justify-between bg-primary/10 rounded-lg px-3 py-2"
               >
                 <span class="text-sm truncate">{{ uploadedFileName }}</span>
-                <Button variant="ghost" size="icon" class="h-7 w-7 shrink-0" @click="clearUploadedImage">
+                <Button variant="ghost" size="icon" @click="clearUploadedImage">
                   <span class="text-destructive text-lg leading-none">&times;</span>
                 </Button>
               </div>
@@ -438,12 +437,12 @@ onMounted(() => {
         <!-- Settings -->
         <Card>
           <CardHeader>
-            <CardTitle class="text-base flex items-center gap-2">
+            <CardTitle class="flex items-center gap-2">
               <Maximize2 class="h-4 w-4 text-muted-foreground" />
               显示设置
             </CardTitle>
           </CardHeader>
-          <CardContent class="space-y-5">
+          <CardContent>
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-sm">图标大小</span>
@@ -508,7 +507,6 @@ onMounted(() => {
                 <Input
                   v-model="filename"
                   placeholder="article-cover"
-                  class="h-9 rounded-r-none"
                 />
                 <span class="inline-flex items-center h-9 px-2.5 rounded-r-md border border-l-0 border-input bg-muted/50 text-xs text-muted-foreground whitespace-nowrap">
                   .png/.webp

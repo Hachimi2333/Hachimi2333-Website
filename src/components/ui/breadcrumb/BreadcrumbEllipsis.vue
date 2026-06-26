@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { HTMLAttributes } from "vue"
-import { ChevronRight } from "@lucide/vue"
+import { MoreHorizontal } from "@lucide/vue"
 import { cn } from "@/lib/utils"
 
 const props = defineProps<{
@@ -9,14 +9,15 @@ const props = defineProps<{
 </script>
 
 <template>
-  <li
-    data-slot="breadcrumb-separator"
+  <span
+    data-slot="breadcrumb-ellipsis"
     role="presentation"
     aria-hidden="true"
-    :class="cn('[&>svg]:size-3.5', props.class)"
+    :class="cn('flex size-9 items-center justify-center', props.class)"
   >
     <slot>
-      <ChevronRight />
+      <MoreHorizontal class="size-4" />
     </slot>
-  </li>
+    <span class="sr-only">More</span>
+  </span>
 </template>

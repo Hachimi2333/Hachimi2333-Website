@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
-import { cn } from '@/lib/utils'
+import type { HTMLAttributes } from "vue"
+import { cn } from "@/lib/utils"
 
 const props = defineProps<{
-  class?: HTMLAttributes['class']
+  class?: HTMLAttributes["class"]
 }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-  return delegated
-})
 </script>
 
 <template>
-  <div :class="cn('flex items-center p-6 pt-0', props.class)" v-bind="delegatedProps">
+  <div
+    data-slot="card-footer"
+    :class="cn('flex items-center px-6 [.border-t]:pt-6', props.class)"
+  >
     <slot />
   </div>
 </template>

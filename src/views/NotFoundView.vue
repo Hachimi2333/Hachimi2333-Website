@@ -13,7 +13,7 @@ const router = useRouter()
       <p class="text-lg font-medium">页面不存在</p>
       <div class="flex justify-center">
         <Button @click="router.push('/')">
-          <Home class="mr-2 h-4 w-4" />
+          <Home data-icon="inline-start" />
           返回首页
         </Button>
       </div>

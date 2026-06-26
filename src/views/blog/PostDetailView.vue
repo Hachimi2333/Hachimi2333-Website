@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb'
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb'
 import { Calendar, Tag, FolderOpen, ArrowLeft, Clock } from 'lucide-vue-next'
 import { getPostBySlug } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
@@ -102,21 +102,27 @@ watch(() => route.params.slug, async () => {
     <template v-if="post">
       <!-- Breadcrumb -->
       <Breadcrumb class="mb-6">
-        <BreadcrumbItem>
-          <BreadcrumbLink @click="router.push('/')" class="cursor-pointer">首页</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink @click="router.push('/posts')" class="cursor-pointer">博客</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>{{ post.title }}</BreadcrumbPage>
-        </BreadcrumbItem>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink as-child>
+              <router-link to="/">首页</router-link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink as-child>
+              <router-link to="/posts">博客</router-link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{{ post.title }}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
       </Breadcrumb>
 
       <!-- Post Header -->
-      <header class="mb-6 pb-6 border-b">
+      <header class="mb-6">
         <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">{{ post.title }}</h1>
         <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <div class="flex items-center gap-1.5">
@@ -140,13 +146,13 @@ watch(() => route.params.slug, async () => {
 
       <!-- Post Content -->
       <Card>
-        <CardContent class="pt-6">
+        <CardContent>
           <!-- Cover Image -->
           <div v-if="post.image" class="mb-8 rounded-lg overflow-hidden">
             <img
               :src="post.image"
               :alt="post.title"
-              class="w-full max-h-96 object-cover cursor-zoom-in"
+              class="w-full max-h-96 object-cover"
               loading="lazy"
             />
           </div>
@@ -156,9 +162,9 @@ watch(() => route.params.slug, async () => {
       </Card>
 
       <!-- Back to list -->
-      <div class="mt-6 pt-6 border-t">
+      <div class="mt-6">
         <Button variant="ghost" @click="router.push('/posts')">
-          <ArrowLeft class="mr-2 h-4 w-4" />
+          <ArrowLeft data-icon="inline-start" />
           返回文章列表
         </Button>
       </div>
@@ -170,7 +176,7 @@ watch(() => route.params.slug, async () => {
         <h1 class="text-2xl font-bold mb-2">文章未找到</h1>
         <p class="text-muted-foreground mb-6">你访问的文章不存在</p>
         <Button @click="router.push('/posts')">
-          <ArrowLeft class="mr-2 h-4 w-4" />
+          <ArrowLeft data-icon="inline-start" />
           返回博客
         </Button>
       </div>

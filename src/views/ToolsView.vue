@@ -48,7 +48,7 @@ const iconMap: Record<string, typeof Image> = {
         :class="tool.route ? 'cursor-pointer' : ''"
         @click="tool.route && router.push(tool.route)"
       >
-        <CardContent class="p-5">
+        <CardContent>
           <div class="flex items-center gap-2.5 mb-2">
             <component :is="iconMap[tool.name] || Wrench" class="h-5 w-5 text-muted-foreground shrink-0" />
             <h3 class="font-medium truncate">{{ tool.name }}</h3>

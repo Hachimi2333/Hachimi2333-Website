@@ -132,7 +132,7 @@ onMounted(() => {
     <div class="space-y-6">
       <!-- Preview -->
       <Card>
-        <CardContent class="flex justify-center p-4 sm:p-6 pb-0">
+        <CardContent>
           <div class="aspect-square w-full max-w-[320px] bg-white rounded-xl overflow-hidden border">
             <canvas
               ref="canvasRef"
@@ -146,11 +146,11 @@ onMounted(() => {
           <span class="tabular-nums shrink-0">1024 × 1024 px</span>
           <div class="flex items-center gap-2">
             <Button size="sm" variant="outline" @click="exportPNG">
-              <Download class="h-3.5 w-3.5 mr-1" />
+              <Download data-icon="inline-start" />
               导出 PNG
             </Button>
-            <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0" @click="resetAll" title="重置">
-              <RotateCcw class="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon" @click="resetAll" title="重置">
+              <RotateCcw />
             </Button>
           </div>
         </div>
@@ -161,12 +161,12 @@ onMounted(() => {
         <!-- Icon Source -->
         <Card>
           <CardHeader>
-            <CardTitle class="text-base flex items-center gap-2">
+            <CardTitle class="flex items-center gap-2">
               <Search class="h-4 w-4 text-muted-foreground" />
               图标来源
             </CardTitle>
           </CardHeader>
-          <CardContent class="space-y-4">
+          <CardContent>
             <div
               v-if="currentIcon"
               class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
@@ -176,7 +176,7 @@ onMounted(() => {
               <Button
                 variant="ghost"
                 size="icon"
-                class="h-6 w-6 shrink-0 ml-auto"
+                class="ml-auto"
                 @click="resetAll"
                 title="清除"
               >
@@ -188,11 +188,10 @@ onMounted(() => {
               <Input
                 v-model="searchQuery"
                 placeholder="例如: material-symbols:home, mdi:star..."
-                class="h-9"
                 @keyup.enter="onSearch"
               />
               <Button size="sm" @click="onSearch" :disabled="searchLoading">
-                <Search class="h-4 w-4" />
+                <Search />
               </Button>
             </div>
 
@@ -232,12 +231,12 @@ onMounted(() => {
         <!-- Settings -->
         <Card>
           <CardHeader>
-            <CardTitle class="text-base flex items-center gap-2">
+            <CardTitle class="flex items-center gap-2">
               <Maximize2 class="h-4 w-4 text-muted-foreground" />
               显示设置
             </CardTitle>
           </CardHeader>
-          <CardContent class="space-y-5">
+          <CardContent>
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-sm">图标大小</span>

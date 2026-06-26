@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupInput, InputGroupAddon } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Search, Calendar, FolderOpen, FileText, Archive, Tag } from 'lucide-vue-next'
 import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
@@ -45,31 +45,25 @@ function extractDescription(post: { description: string; content: string }): str
     <!-- Tabs + Search -->
     <Tabs v-model="activeTab" class="mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <TabsList class="bg-transparent rounded-none p-0 h-auto justify-start gap-6">
-          <TabsTrigger
-            value="articles"
-            class="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground hover:bg-transparent hover:text-foreground"
-          >
-            <FileText class="mr-1.5 h-3.5 w-3.5" />
+        <TabsList>
+          <TabsTrigger value="articles">
+            <FileText data-icon="inline-start" />
             文章
           </TabsTrigger>
-          <TabsTrigger
-            value="archives"
-            class="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground hover:bg-transparent hover:text-foreground"
-          >
-            <Archive class="mr-1.5 h-3.5 w-3.5" />
+          <TabsTrigger value="archives">
+            <Archive data-icon="inline-start" />
             归档
           </TabsTrigger>
         </TabsList>
 
         <Transition name="search-fade">
-          <div v-if="activeTab === 'articles'" class="relative w-full sm:w-auto sm:min-w-[240px] mb-2 sm:mb-0">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              v-model="searchQuery"
-              placeholder="搜索文章..."
-              class="pl-9 h-9"
-            />
+          <div v-if="activeTab === 'articles'" class="w-full sm:w-auto sm:min-w-[240px] mb-2 sm:mb-0">
+            <InputGroup>
+              <InputGroupInput v-model="searchQuery" placeholder="搜索文章..." />
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+            </InputGroup>
           </div>
         </Transition>
       </div>
@@ -81,7 +75,7 @@ function extractDescription(post: { description: string; content: string }): str
       <Card
         v-for="post in filteredPosts"
         :key="post.slug"
-        class="cursor-pointer overflow-hidden"
+        class="cursor-pointer overflow-hidden py-0"
         @click="router.push(`/posts/${post.slug}`)"
       >
         <div class="md:flex">
@@ -106,7 +100,6 @@ function extractDescription(post: { description: string; content: string }): str
                 v-for="tag in post.tags"
                 :key="tag"
                 variant="secondary"
-                class="text-xs px-1.5 py-0 h-5 gap-0.5"
               >
                 <Tag class="h-3 w-3" />
                 {{ tag }}
@@ -145,7 +138,7 @@ function extractDescription(post: { description: string; content: string }): str
         <div class="flex items-center gap-3 mb-3">
           <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
           <h3 class="text-lg font-semibold text-foreground">{{ group.label }}年</h3>
-          <Badge variant="outline" class="font-normal">{{ group.posts.length }} 篇</Badge>
+          <Badge variant="outline">{{ group.posts.length }} 篇</Badge>
         </div>
 
         <div class="space-y-1 ml-3.5 border-l-2 border-border pl-5 pb-2">
@@ -166,7 +159,6 @@ function extractDescription(post: { description: string; content: string }): str
                 v-for="tag in post.tags"
                 :key="tag"
                 variant="secondary"
-                class="text-xs px-1.5 py-0 h-5 gap-0.5"
               >
                 <Tag class="h-3 w-3" />
                 {{ tag }}

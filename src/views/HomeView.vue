@@ -34,17 +34,19 @@ const router = useRouter()
       <!-- Buttons -->
       <div class="flex flex-wrap justify-center gap-3">
         <Button @click="router.push('/posts')" class="group">
-          <BookOpen class="mr-2 h-4 w-4" />
+          <BookOpen data-icon="inline-start" />
           博客
-          <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          <ArrowRight data-icon="inline-end" class="transition-transform group-hover:translate-x-1" />
         </Button>
         <Button variant="outline" @click="router.push('/tools')">
-          <Wrench class="mr-2 h-4 w-4" />
+          <Wrench data-icon="inline-start" />
           工具
         </Button>
-        <Button variant="outline" as="a" href="https://github.com/hachimi2333" target="_blank" rel="noopener noreferrer">
-          <Github class="mr-2 h-4 w-4" />
-          GitHub
+        <Button variant="outline" as-child>
+          <a href="https://github.com/hachimi2333" target="_blank" rel="noopener noreferrer">
+            <Github data-icon="inline-start" />
+            GitHub
+          </a>
         </Button>
       </div>
     </div>
