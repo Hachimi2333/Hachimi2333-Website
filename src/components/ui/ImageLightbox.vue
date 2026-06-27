@@ -19,6 +19,14 @@ const isDragging = ref(false)
 const dragStart = ref({ x: 0, y: 0 })
 const lastTranslate = ref({ x: 0, y: 0 })
 
+// Touch state
+const initialPinchDistance = ref(0)
+const initialScale = ref(1)
+const touchStart = ref({ x: 0, y: 0 })
+const lastTouchTranslate = ref({ x: 0, y: 0 })
+const isTouchDragging = ref(false)
+const touchCount = ref(0)
+
 const MIN_SCALE = 0.5
 const MAX_SCALE = 5
 const ZOOM_STEP = 0.15
@@ -41,12 +49,12 @@ function onBackdropClick(e: MouseEvent) {
   }
 }
 
+// --- Mouse wheel zoom ---
 function onWheel(e: WheelEvent) {
   e.preventDefault()
   const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP
   const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale.value + delta))
 
-  // Zoom toward cursor position
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   const centerX = rect.width / 2
   const centerY = rect.height / 2
@@ -60,8 +68,8 @@ function onWheel(e: WheelEvent) {
   scale.value = newScale
 }
 
+// --- Mouse drag ---
 function onDragStart(e: MouseEvent) {
-  if (scale.value <= 1) return
   isDragging.value = true
   dragStart.value = { x: e.clientX, y: e.clientY }
   lastTranslate.value = { x: translateX.value, y: translateY.value }
@@ -77,6 +85,71 @@ function onDragEnd() {
   isDragging.value = false
 }
 
+// --- Touch events ---
+function getTouchDistance(t: TouchList) {
+  const dx = t[0].clientX - t[1].clientX
+  const dy = t[0].clientY - t[1].clientY
+  return Math.hypot(dx, dy)
+}
+
+function getTouchCenter(t: TouchList, rect: DOMRect) {
+  const cx = (t[0].clientX + t[1].clientX) / 2
+  const cy = (t[0].clientY + t[1].clientY) / 2
+  return { x: cx - rect.left, y: cy - rect.top }
+}
+
+function onTouchStart(e: TouchEvent) {
+  e.preventDefault()
+  touchCount.value = e.touches.length
+
+  if (e.touches.length === 2) {
+    // Pinch start
+    initialPinchDistance.value = getTouchDistance(e.touches)
+    initialScale.value = scale.value
+  } else if (e.touches.length === 1) {
+    // Single finger drag
+    isTouchDragging.value = true
+    touchStart.value = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    lastTouchTranslate.value = { x: translateX.value, y: translateY.value }
+  }
+}
+
+function onTouchMove(e: TouchEvent) {
+  e.preventDefault()
+
+  if (e.touches.length === 2) {
+    // Pinch zoom
+    const dist = getTouchDistance(e.touches)
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, initialScale.value * (dist / initialPinchDistance.value)))
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const center = getTouchCenter(e.touches, rect)
+    const containerCenterX = rect.width / 2
+    const containerCenterY = rect.height / 2
+
+    const ratio = newScale / scale.value
+    translateX.value = center.x - ratio * (center.x - translateX.value - containerCenterX) - containerCenterX
+    translateY.value = center.y - ratio * (center.y - translateY.value - containerCenterY) - containerCenterY
+
+    scale.value = newScale
+  } else if (e.touches.length === 1 && isTouchDragging.value) {
+    // Single finger drag
+    translateX.value = lastTouchTranslate.value.x + (e.touches[0].clientX - touchStart.value.x)
+    translateY.value = lastTouchTranslate.value.y + (e.touches[0].clientY - touchStart.value.y)
+  }
+}
+
+function onTouchEnd(e: TouchEvent) {
+  if (e.touches.length < 2) {
+    initialPinchDistance.value = 0
+  }
+  if (e.touches.length === 0) {
+    isTouchDragging.value = false
+    touchCount.value = 0
+  }
+}
+
+// --- Lifecycle ---
 watch(() => props.visible, (val) => {
   document.body.style.overflow = val ? 'hidden' : ''
   if (val) resetTransform()
@@ -100,22 +173,25 @@ onUnmounted(() => {
         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
         @click="onBackdropClick"
         @wheel.prevent="onWheel"
+        @touchstart.passive="onTouchStart"
+        @touchmove.prevent="onTouchMove"
+        @touchend="onTouchEnd"
       >
         <button
-          class="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+          class="absolute top-4 right-4 flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
           @click="emit('close')"
         >
-          <X class="w-5 h-5" />
+          <X />
         </button>
         <img
           :src="src"
           :alt="alt || ''"
           :style="{
             transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
-            cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+            cursor: isDragging ? 'grabbing' : 'grab',
             transition: isDragging ? 'none' : 'transform 0.15s ease',
           }"
-          class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl select-none"
+          class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl select-none touch-none"
           draggable="false"
           @mousedown.prevent="onDragStart"
           @mousemove="onDragMove"

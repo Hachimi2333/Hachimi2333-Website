@@ -40,6 +40,10 @@ watch(searchQuery, () => {
   currentPage.value = 1
 })
 
+watch(currentPage, () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
 const yearArchives = computed(() => getArchivesByYear())
 
 function extractDescription(post: { description: string; content: string }): string {

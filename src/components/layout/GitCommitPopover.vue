@@ -9,9 +9,8 @@ const { gitInfo, commitUrl, formattedBody } = useGitInfo()
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <button class="inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer">
-        <GitCommit class="w-3 h-3" />
-        <span class="text-xs font-mono">{{ gitInfo.hash }}</span>
+      <button class="hover:text-foreground transition-colors cursor-pointer font-medium">
+        版本
       </button>
     </PopoverTrigger>
     <PopoverContent side="top" :side-offset="8" class="w-80">

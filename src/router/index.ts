@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 
 const BASE_TITLE = 'Hachimi2333'
 
@@ -41,6 +42,24 @@ const router = createRouter({
       meta: { title: `App 图标生成器 - ${BASE_TITLE}` },
     },
     {
+      path: '/auth/login',
+      name: 'login',
+      component: () => import('@/views/auth/LoginView.vue'),
+      meta: { title: `登录 - ${BASE_TITLE}`, guest: true },
+    },
+    {
+      path: '/auth/register',
+      name: 'register',
+      component: () => import('@/views/auth/RegisterView.vue'),
+      meta: { title: `注册 - ${BASE_TITLE}`, guest: true },
+    },
+    {
+      path: '/auth/profile',
+      name: 'profile',
+      component: () => import('@/views/auth/ProfileView.vue'),
+      meta: { title: `个人资料 - ${BASE_TITLE}` },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
@@ -51,6 +70,18 @@ const router = createRouter({
     if (savedPosition) return savedPosition
     return { top: 0, behavior: 'smooth' }
   },
+})
+
+router.beforeEach((to, _from, next) => {
+  const { isAuthenticated } = useAuth()
+
+  if (to.meta.requiresAuth && !isAuthenticated.value) {
+    next({ path: '/auth/login', query: { redirect: to.fullPath } })
+  } else if (to.meta.guest && isAuthenticated.value) {
+    next('/auth/profile')
+  } else {
+    next()
+  }
 })
 
 router.afterEach((to) => {
