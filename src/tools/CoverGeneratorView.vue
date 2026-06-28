@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { cn } from '@/lib/utils'
 import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
-import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown } from 'lucide-vue-next'
+import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown, Loader2 } from 'lucide-vue-next'
 import ToolLayout from '@/tools/components/ToolLayout.vue'
 import { getToolById } from '@/tools/manifest'
 
@@ -19,6 +19,7 @@ const searchQuery = ref('')
 const searchResults = ref<string[]>([])
 const searchStatus = ref('')
 const searchLoading = ref(false)
+const iconLoading = ref(false)
 
 const currentIconName = ref('')
 const currentIconSvg = ref<string | null>(null)
@@ -147,19 +148,21 @@ async function loadIconByName(iconName: string) {
   if (isUsingUploadedImage.value) {
     clearUploadedImage()
   }
-  searchStatus.value = '加载中...'
+  iconLoading.value = true
   currentIconName.value = iconName
 
   try {
     const svg = await fetchIconSvg(iconName)
     currentIconSvg.value = svg
-    searchStatus.value = `已加载: ${iconName}`
+    iconInfoText.value = `${iconName}  加载完成`
     nextTick(() => drawCanvas())
   } catch (err) {
     searchStatus.value = `加载失败: ${err instanceof Error ? err.message : '未知错误'}`
     currentIconSvg.value = null
     currentIconName.value = ''
     nextTick(() => drawCanvas())
+  } finally {
+    iconLoading.value = false
   }
 }
 
@@ -240,6 +243,7 @@ function onFileSelect(e: Event) {
 function resetAll() {
   currentIconName.value = ''
   currentIconSvg.value = null
+  iconLoading.value = false
   clearUploadedImage()
   searchResults.value = []
   searchStatus.value = ''
@@ -347,6 +351,7 @@ onMounted(() => {
               v-if="currentIconName || uploadedImageData"
               class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
             >
+              <Loader2 v-if="iconLoading" class="size-3.5 animate-spin text-muted-foreground shrink-0" />
               <span class="text-muted-foreground shrink-0">当前:</span>
               <span
                 class="truncate"

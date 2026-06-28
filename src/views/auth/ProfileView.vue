@@ -1,31 +1,31 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuth, type PublicProfile } from '@/composables/useAuth'
+import { useAuth } from '@/composables/useAuth'
+import { useProfile } from '@/composables/useProfile'
+import type { PublicProfile } from '@/types/user'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { User, Pencil, MapPin, CalendarDays, Loader2 } from 'lucide-vue-next'
+import { User, Pencil, MapPin, CalendarDays } from 'lucide-vue-next'
+import { Skeleton } from '@/components/ui/skeleton'
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
+import EditProfileDialog from '@/components/auth/EditProfileDialog.vue'
+import EditBioDialog from '@/components/auth/EditBioDialog.vue'
+import { formatDate } from '@/lib/date'
 
 const route = useRoute()
 const router = useRouter()
-const { user, isAuthenticated, fetchUserProfile, updateProfile } = useAuth()
+const { user, isAuthenticated, verified } = useAuth()
+const { fetchProfile } = useProfile()
 
 const otherProfile = ref<PublicProfile | null>(null)
 const loading = ref(false)
-const saving = ref(false)
-const error = ref('')
 
 const showProfileDialog = ref(false)
 const showBioDialog = ref(false)
-const form = ref({ name: '', avatar: '', signature: '', region: '' })
-const bioForm = ref('')
 
 const viewingSelf = computed(() => {
   const idParam = route.query.id
@@ -40,60 +40,17 @@ const profile = computed(() => {
 
 const canEdit = computed(() => viewingSelf.value && isAuthenticated.value)
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
 async function loadProfile() {
+  if (viewingSelf.value) {
+    otherProfile.value = null
+    return
+  }
   loading.value = true
-  const id = viewingSelf.value ? user.value?.id : Number(route.query.id)
+  const id = Number(route.query.id)
   if (id) {
-    otherProfile.value = await fetchUserProfile(id)
+    otherProfile.value = await fetchProfile(id)
   }
   loading.value = false
-}
-
-function openProfileDialog() {
-  if (!user.value) return
-  form.value = {
-    name: user.value.name,
-    avatar: user.value.avatar || '',
-    signature: user.value.signature || '',
-    region: user.value.region || ''
-  }
-  error.value = ''
-  showProfileDialog.value = true
-}
-
-function openBioDialog() {
-  bioForm.value = otherProfile.value?.bio || ''
-  showBioDialog.value = true
-}
-
-async function saveProfile() {
-  saving.value = true
-  error.value = ''
-
-  const res = await updateProfile(form.value)
-  if (res.success) {
-    showProfileDialog.value = false
-  } else {
-    error.value = res.message || '保存失败'
-  }
-  saving.value = false
-}
-
-async function saveBio() {
-  saving.value = true
-  error.value = ''
-
-  const res = await updateProfile({ bio: bioForm.value })
-  if (res.success) {
-    showBioDialog.value = false
-  } else {
-    error.value = res.message || '保存失败'
-  }
-  saving.value = false
 }
 
 onMounted(loadProfile)
@@ -102,9 +59,47 @@ watch(() => route.query.id, loadProfile)
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <!-- 加载中 -->
-    <div v-if="loading" class="flex items-center justify-center py-20">
-      <Loader2 class="size-6 animate-spin text-muted-foreground" />
+    <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '个人资料' }]" />
+
+    <!-- 认证验证中 或 资料加载中 -->
+    <div v-if="!verified || loading" class="flex flex-col md:flex-row gap-6">
+      <!-- 左栏骨架 -->
+      <div class="flex flex-col gap-4 md:w-64 shrink-0">
+        <Card>
+          <CardContent class="flex flex-col items-center md:items-start gap-4">
+            <Skeleton class="size-28 rounded-full" />
+            <div class="w-full space-y-2">
+              <Skeleton class="h-5 w-24 mx-auto md:mx-0" />
+              <Skeleton class="h-4 w-32 mx-auto md:mx-0" />
+            </div>
+            <Separator class="w-full" />
+            <div class="flex flex-col gap-2 w-full">
+              <Skeleton class="h-4 w-36" />
+              <Skeleton class="h-4 w-28" />
+            </div>
+            <Skeleton class="h-9 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+      <!-- 右栏骨架 -->
+      <div class="flex-1 min-w-0 space-y-3">
+        <Skeleton class="h-9 w-24" />
+        <Card>
+          <CardContent>
+            <div class="space-y-2">
+              <Skeleton class="h-4 w-full" />
+              <Skeleton class="h-4 w-3/4" />
+              <Skeleton class="h-4 w-1/2" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+
+    <!-- 未登录且查看自己 -->
+    <div v-else-if="verified && !route.query.id && !isAuthenticated" class="text-center py-20">
+      <p class="text-muted-foreground mb-2">请先登录后查看个人资料</p>
+      <Button size="sm" @click="router.push({ path: '/auth/login', query: { redirect: '/auth/profile' } })">去登录</Button>
     </div>
 
     <!-- 用户不存在 -->
@@ -134,13 +129,13 @@ watch(() => route.query.id, loadProfile)
             <Separator class="w-full" />
 
             <div class="flex flex-col gap-2 text-sm text-muted-foreground w-full">
-              <div v-if="otherProfile?.createdAt" class="flex items-center gap-2">
+              <div v-if="profile?.createdAt" class="flex items-center gap-2">
                 <CalendarDays class="size-4 shrink-0" />
-                <span>加入于 {{ formatDate(otherProfile.createdAt) }}</span>
+                <span>加入于 {{ formatDate(profile.createdAt) }}</span>
               </div>
-              <div v-if="otherProfile?.region" class="flex items-center gap-2">
+              <div v-if="profile?.region" class="flex items-center gap-2">
                 <MapPin class="size-4 shrink-0" />
-                <span>{{ otherProfile.region }}</span>
+                <span>{{ profile.region }}</span>
               </div>
               <div v-else class="flex items-center gap-2 text-muted-foreground/50">
                 <MapPin class="size-4 shrink-0" />
@@ -148,7 +143,7 @@ watch(() => route.query.id, loadProfile)
               </div>
             </div>
 
-            <Button v-if="canEdit" variant="outline" size="sm" class="w-full" @click="openProfileDialog">
+            <Button v-if="canEdit" variant="outline" size="sm" class="w-full" @click="showProfileDialog = true">
               <Pencil class="size-3.5" data-icon />
               编辑个人资料
             </Button>
@@ -163,7 +158,7 @@ watch(() => route.query.id, loadProfile)
             <TabsList>
               <TabsTrigger value="bio">个人简介</TabsTrigger>
             </TabsList>
-            <Button v-if="canEdit" variant="ghost" size="sm" @click="openBioDialog">
+            <Button v-if="canEdit" variant="ghost" size="sm" @click="showBioDialog = true">
               <Pencil class="size-3.5" data-icon />
               编辑简介
             </Button>
@@ -172,7 +167,7 @@ watch(() => route.query.id, loadProfile)
           <TabsContent value="bio" class="mt-3">
             <Card>
               <CardContent>
-                <div v-if="otherProfile?.bio" class="prose text-sm leading-relaxed whitespace-pre-wrap">{{ otherProfile.bio }}</div>
+                <div v-if="profile?.bio" class="prose text-sm leading-relaxed whitespace-pre-wrap">{{ profile.bio }}</div>
                 <div v-else class="text-sm text-muted-foreground italic">这个人很懒，什么都没有写。</div>
               </CardContent>
             </Card>
@@ -181,57 +176,8 @@ watch(() => route.query.id, loadProfile)
       </div>
     </div>
 
-    <!-- 编辑个人资料弹窗 -->
-    <Dialog v-model:open="showProfileDialog">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>编辑个人资料</DialogTitle>
-        </DialogHeader>
-        <FieldGroup>
-          <Field>
-            <FieldLabel for="edit-name">用户名</FieldLabel>
-            <Input id="edit-name" v-model="form.name" />
-          </Field>
-          <Field>
-            <FieldLabel for="edit-avatar">头像 URL</FieldLabel>
-            <Input id="edit-avatar" v-model="form.avatar" placeholder="https://..." />
-          </Field>
-          <Field>
-            <FieldLabel for="edit-signature">签名</FieldLabel>
-            <Input id="edit-signature" v-model="form.signature" placeholder="写点什么..." />
-          </Field>
-          <Field>
-            <FieldLabel for="edit-region">地区</FieldLabel>
-            <Input id="edit-region" v-model="form.region" placeholder="中国·北京" />
-          </Field>
-        </FieldGroup>
-        <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
-        <DialogFooter>
-          <Button variant="outline" :disabled="saving" @click="showProfileDialog = false">取消</Button>
-          <Button :disabled="saving" @click="saveProfile">
-            <Loader2 v-if="saving" class="size-3.5 animate-spin" data-icon />
-            保存
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <!-- 编辑简介弹窗 -->
-    <Dialog v-model:open="showBioDialog">
-      <DialogContent class="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>编辑个人简介</DialogTitle>
-        </DialogHeader>
-        <Textarea v-model="bioForm" rows="12" placeholder="支持 Markdown..." class="font-mono text-sm" />
-        <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
-        <DialogFooter>
-          <Button variant="outline" :disabled="saving" @click="showBioDialog = false">取消</Button>
-          <Button :disabled="saving" @click="saveBio">
-            <Loader2 v-if="saving" class="size-3.5 animate-spin" data-icon />
-            保存
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <!-- 编辑弹窗 -->
+    <EditProfileDialog v-model:open="showProfileDialog" :user="user" />
+    <EditBioDialog v-model:open="showBioDialog" :bio="profile?.bio || ''" />
   </div>
 </template>

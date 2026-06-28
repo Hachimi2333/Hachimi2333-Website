@@ -13,6 +13,7 @@ import {
   PaginationNext,
 } from '@/components/ui/pagination'
 import { Search, Calendar, FolderOpen, FileText, Archive, Tag, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
 import { formatDate, formatMonthDay } from '@/lib/date'
 
@@ -59,6 +60,8 @@ function extractDescription(post: { description: string; content: string }): str
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
+    <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客' }]" />
+
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-3xl font-bold tracking-tight">博客</h1>

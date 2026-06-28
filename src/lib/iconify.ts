@@ -47,16 +47,6 @@ export function applyColorToSvg(svgString: string, color: string): string {
     }
     setFillRecursive(svgElement)
 
-    const allElements = svgElement.querySelectorAll('*')
-    allElements.forEach(el => {
-      if (el.tagName !== 'defs' && el.tagName !== 'style' && el.tagName !== 'script') {
-        const fill = el.getAttribute('fill')
-        if (fill !== null && fill !== 'none') {
-          el.setAttribute('fill', color)
-        }
-      }
-    })
-
     const serializer = new XMLSerializer()
     return serializer.serializeToString(svgElement)
   } catch {

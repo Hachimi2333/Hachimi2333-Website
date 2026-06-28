@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import { Badge } from '@/components/ui/badge'
 import { tools } from '@/tools/manifest'
 
@@ -9,6 +10,8 @@ const router = useRouter()
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
+    <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '工具' }]" />
+
     <div class="mb-6">
       <h1 class="text-3xl font-bold tracking-tight">工具</h1>
     </div>

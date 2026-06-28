@@ -60,6 +60,12 @@ const router = createRouter({
       meta: { title: `个人资料 - ${BASE_TITLE}` },
     },
     {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/views/admin/AdminView.vue'),
+      meta: { title: `后台管理 - ${BASE_TITLE}`, requiresAuth: true, requiresAdmin: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
@@ -73,10 +79,17 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from, next) => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin, authInitialized, fetchUser } = useAuth()
+
+  // 首次加载：同步读缓存立即确定状态，API 验证在后台进行
+  if (!authInitialized.value) {
+    fetchUser()
+  }
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
     next({ path: '/auth/login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresAdmin && !isAdmin.value) {
+    next('/')
   } else if (to.meta.guest && isAuthenticated.value) {
     next('/auth/profile')
   } else {

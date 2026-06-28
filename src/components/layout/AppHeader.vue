@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useTheme } from '@/composables/useTheme'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Home, Sun, Moon, User, LogOut, UserCircle } from 'lucide-vue-next'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Home, Sun, Moon, User, LogOut, UserCircle, Shield } from 'lucide-vue-next'
 
 const router = useRouter()
 
-const theme = inject<{ isDark: { value: boolean }; toggleTheme: () => void }>('theme')
-const { user, isAuthenticated, logout } = useAuth()
+const { isDark, toggleTheme } = useTheme()
+const { user, isAuthenticated, isAdmin, verified, logout } = useAuth()
+const popoverOpen = ref(false)
 
 async function handleLogout() {
   await logout()
@@ -42,17 +45,22 @@ async function handleLogout() {
 
         <!-- Theme toggle -->
         <button
-          v-if="theme"
           class="inline-flex items-center justify-center size-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-          @click="theme.toggleTheme"
+          @click="toggleTheme"
           title="切换主题"
         >
-          <Sun v-if="theme.isDark.value" class="size-4" />
+          <Sun v-if="isDark" class="size-4" />
           <Moon v-else class="size-4" />
         </button>
 
+        <!-- Loading skeleton -->
+        <div v-if="!verified" class="inline-flex items-center gap-2 px-2 py-1">
+          <Skeleton class="size-7 rounded-full" />
+          <Skeleton class="h-4 w-12 hidden md:block" />
+        </div>
+
         <!-- User menu (logged in) -->
-        <Popover v-if="isAuthenticated">
+        <Popover v-else-if="isAuthenticated" v-model:open="popoverOpen">
           <PopoverTrigger as-child>
             <button class="inline-flex items-center gap-2 px-2 py-1 rounded-md hover:bg-accent/50 transition-colors">
               <Avatar class="size-7">
@@ -73,15 +81,25 @@ async function handleLogout() {
               <router-link
                 to="/auth/profile"
                 class="flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors"
+                @click="popoverOpen = false"
               >
-                <UserCircle class="size-4" />
+                <UserCircle />
                 个人资料
+              </router-link>
+              <router-link
+                v-if="isAdmin"
+                to="/admin"
+                class="flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors"
+                @click="popoverOpen = false"
+              >
+                <Shield />
+                后台管理
               </router-link>
               <button
                 class="flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-destructive"
-                @click="handleLogout"
+                @click="handleLogout(); popoverOpen = false"
               >
-                <LogOut class="size-4" />
+                <LogOut />
                 退出登录
               </button>
             </div>

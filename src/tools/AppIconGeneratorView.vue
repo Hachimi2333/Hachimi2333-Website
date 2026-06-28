@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { cn } from '@/lib/utils'
 import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
-import { Search, Download, RotateCcw, Palette, Maximize2 } from 'lucide-vue-next'
+import { Search, Download, RotateCcw, Palette, Maximize2, Loader2 } from 'lucide-vue-next'
 import ToolLayout from '@/tools/components/ToolLayout.vue'
 import { getToolById } from '@/tools/manifest'
 
@@ -19,6 +19,7 @@ const searchQuery = ref('')
 const searchResults = ref<string[]>([])
 const searchStatus = ref('')
 const searchLoading = ref(false)
+const iconLoading = ref(false)
 
 const currentIcon = ref('')
 const currentIconSvg = ref('')
@@ -63,7 +64,7 @@ function drawCanvas() {
 
 async function loadIcon(iconName: string) {
   if (!iconName) return
-  searchStatus.value = '加载中...'
+  iconLoading.value = true
   try {
     currentIconSvg.value = await fetchIconSvg(iconName)
     currentIcon.value = iconName
@@ -72,6 +73,8 @@ async function loadIcon(iconName: string) {
   } catch {
     searchStatus.value = '加载失败'
     currentIconSvg.value = ''
+  } finally {
+    iconLoading.value = false
   }
 }
 
@@ -99,6 +102,7 @@ function selectIcon(iconName: string) {
 function resetAll() {
   currentIcon.value = ''
   currentIconSvg.value = ''
+  iconLoading.value = false
   searchResults.value = []
   searchStatus.value = ''
   searchQuery.value = ''
@@ -174,6 +178,7 @@ onMounted(() => {
               v-if="currentIcon"
               class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
             >
+              <Loader2 v-if="iconLoading" class="size-3.5 animate-spin text-muted-foreground shrink-0" />
               <span class="text-muted-foreground shrink-0">当前:</span>
               <span class="truncate">{{ currentIcon }}</span>
               <Button

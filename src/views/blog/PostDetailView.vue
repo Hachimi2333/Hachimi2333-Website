@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb'
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import { Calendar, Tag, FolderOpen, ArrowLeft, Clock } from 'lucide-vue-next'
 import { getPostBySlug } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
 import { formatDate } from '@/lib/date'
 import ImageLightbox from '@/components/ui/ImageLightbox.vue'
+import ArticleToc from '@/components/blog/ArticleToc.vue'
+import { getHeadingList, resetHeadings } from 'marked-gfm-heading-id'
 import type { BlogPost } from '@/types/blog'
 
 const route = useRoute()
@@ -16,6 +17,7 @@ const router = useRouter()
 const post = ref<BlogPost | undefined>()
 const renderedContent = ref('')
 const readingTime = ref('')
+const tocHeadings = ref<{ level: number; id: string; text: string }[]>([])
 
 const lightboxVisible = ref(false)
 const lightboxSrc = ref('')
@@ -45,55 +47,28 @@ function updateReadingTime(content: string) {
   readingTime.value = `${minutes} 分钟`
 }
 
-function loadPost() {
+async function loadPost() {
   const slug = route.params.slug as string
   post.value = getPostBySlug(slug)
   if (post.value) {
     document.title = `${post.value.title} - Hachimi2333`
-    renderedContent.value = renderMarkdown(post.value.content)
+    resetHeadings()
+    const isDark = document.documentElement.classList.contains('dark')
+    renderedContent.value = await renderMarkdown(post.value.content, isDark)
+    tocHeadings.value = getHeadingList().filter((h) => h.level >= 2)
     updateReadingTime(post.value.content)
   } else {
     document.title = '文章未找到 - Hachimi2333'
+    tocHeadings.value = []
   }
 }
 
-async function highlightCode() {
-  try {
-    const { codeToHtml } = await import('shiki')
-    await new Promise(resolve => setTimeout(resolve, 50))
-    const codeBlocks = document.querySelectorAll('pre code.shiki-code')
-    for (const block of codeBlocks) {
-      const lang = Array.from(block.classList)
-        .find((c) => c.startsWith('language-'))
-        ?.replace('language-', '') || 'text'
-      const text = block.textContent || ''
-      try {
-        const isDark = document.documentElement.classList.contains('dark')
-        const html = await codeToHtml(text, {
-          lang,
-          theme: isDark ? 'github-dark' : 'github-light',
-        })
-        const pre = block.parentElement
-        if (pre) {
-          pre.outerHTML = html
-        }
-      } catch {
-        // Fallback: keep the unhighlighted code block
-      }
-    }
-  } catch {
-    // Shiki not available, keep plain code blocks
-  }
-}
-
-onMounted(async () => {
+onMounted(() => {
   loadPost()
-  await highlightCode()
 })
 
-watch(() => route.params.slug, async () => {
+watch(() => route.params.slug, () => {
   loadPost()
-  await highlightCode()
 })
 </script>
 
@@ -101,25 +76,7 @@ watch(() => route.params.slug, async () => {
   <div class="container mx-auto max-w-4xl px-4 py-8">
     <template v-if="post">
       <!-- Breadcrumb -->
-      <Breadcrumb class="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink as-child>
-              <router-link to="/">首页</router-link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink as-child>
-              <router-link to="/posts">博客</router-link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{{ post.title }}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: post.title }]" />
 
       <!-- Post Header -->
       <header class="mb-6">
@@ -145,8 +102,8 @@ watch(() => route.params.slug, async () => {
       </header>
 
       <!-- Post Content -->
-      <Card>
-        <CardContent>
+      <div class="flex gap-6">
+        <div class="flex-1 min-w-0 max-w-xl">
           <!-- Cover Image -->
           <div v-if="post.image" class="mb-8 rounded-lg overflow-hidden">
             <img
@@ -158,15 +115,18 @@ watch(() => route.params.slug, async () => {
           </div>
 
           <article class="prose max-w-none" v-html="renderedContent" @click="handleArticleClick" />
-        </CardContent>
-      </Card>
 
-      <!-- Back to list -->
-      <div class="mt-6">
-        <Button variant="ghost" @click="router.push('/posts')">
-          <ArrowLeft data-icon="inline-start" />
-          返回文章列表
-        </Button>
+          <!-- Back to list -->
+          <div class="mt-6">
+            <Button variant="ghost" @click="router.push('/posts')">
+              <ArrowLeft data-icon="inline-start" />
+              返回文章列表
+            </Button>
+          </div>
+        </div>
+
+        <!-- TOC -->
+        <ArticleToc :headings="tocHeadings" />
       </div>
     </template>
 
