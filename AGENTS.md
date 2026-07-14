@@ -1,9 +1,10 @@
 # Hachimi2333-Website
 
-个人网站 — Vue 3 + shadcn-vue + Tailwind CSS 4
+个人网站 — Vue 3 + shadcn-vue + Tailwind CSS 4 + Express 5 后端
 
 ## 技术栈
 
+### 前端
 - Vue 3.5+ (Composition API, `<script setup>`)
 - TypeScript (strict mode)
 - Vite 8
@@ -12,22 +13,47 @@
 - vue-router 4 (history mode, 懒加载)
 - @vueuse/core
 
+### 后端
+- Express 5
+- MongoDB (native driver)
+- JWT 认证
+- bcryptjs 密码加密
+
 ## 项目结构
 
 ```
-src/
-├── components/
-│   ├── auth/          # 认证相关组件（协议弹窗、编辑弹窗）
-│   ├── blog/          # 博客组件（ArticleToc）
-│   ├── layout/        # 布局组件（AppLayout, Header, Footer, PageBreadcrumb）
-│   └── ui/            # shadcn-vue UI 组件（barrel export）
-├── composables/       # 组合式函数（useAuth, useProfile, useTheme, useGitInfo）
-├── lib/               # 工具库（http, blog, markdown, date, iconify, admin）
-├── router/            # 路由配置
-├── tools/             # 工具页面（独立模块，不与网站组件共享）
-├── types/             # TypeScript 类型定义
-├── views/             # 页面视图
-└── blog/post/         # Markdown 博客文章
+├── src/                          # 前端代码
+│   ├── components/
+│   │   ├── auth/          # 认证相关组件（协议弹窗、编辑弹窗）
+│   │   ├── blog/          # 博客组件（ArticleToc）
+│   │   ├── layout/        # 布局组件（AppLayout, Header, Footer, PageBreadcrumb）
+│   │   └── ui/            # shadcn-vue UI 组件（barrel export）
+│   ├── composables/       # 组合式函数（useAuth, useProfile, useTheme, useGitInfo）
+│   ├── lib/               # 工具库（http, blog, markdown, date, iconify, admin）
+│   ├── router/            # 路由配置
+│   ├── tools/             # 工具页面（独立模块，不与网站组件共享）
+│   ├── types/             # TypeScript 类型定义
+│   ├── views/             # 页面视图
+│   └── blog/post/         # Markdown 博客文章
+│
+├── cloud-functions/              # 后端代码（EdgeOne Makers 格式）
+│   ├── api/
+│   │   └── index.js        # 统一入口（挂载各服务）
+│   ├── dev.js              # 本地开发入口
+│   └── auth/               # 认证服务
+│       ├── index.js        # 服务入口（Express app）
+│       ├── lib/            # 共享库
+│       │   ├── auth.js     # JWT + bcrypt
+│       │   ├── db.js       # MongoDB 连接
+│       │   ├── middleware.js # requireAuth / requireAdmin
+│       │   └── serialize.js # 数据序列化
+│       └── routes/         # 路由
+│           ├── auth.js     # 注册、登录、登出
+│           ├── users.js    # 用户资料
+│           └── admin.js    # 管理员接口
+│
+├── .env                          # 环境变量
+└── package.json
 ```
 
 ## 开发规范
@@ -65,4 +91,5 @@ src/
 npm run dev      # 开发服务器
 npm run build    # TypeScript 检查 + Vite 构建
 npm run preview  # 预览构建产物
+npm run server:dev  # 后端开发服务器
 ```

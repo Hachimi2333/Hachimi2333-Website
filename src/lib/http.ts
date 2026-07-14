@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://auth.hachimi2333.top/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://hachimi2333.top/api'
 
 interface RequestOptions extends RequestInit {
   json?: unknown
