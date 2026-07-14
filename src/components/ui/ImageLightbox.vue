@@ -173,7 +173,7 @@ onUnmounted(() => {
         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
         @click="onBackdropClick"
         @wheel.prevent="onWheel"
-        @touchstart.passive="onTouchStart"
+        @touchstart="onTouchStart"
         @touchmove.prevent="onTouchMove"
         @touchend="onTouchEnd"
       >

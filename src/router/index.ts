@@ -54,10 +54,10 @@ const router = createRouter({
       meta: { title: `注册 - ${BASE_TITLE}`, guest: true },
     },
     {
-      path: '/auth/profile',
-      name: 'profile',
-      component: () => import('@/views/auth/ProfileView.vue'),
-      meta: { title: `个人资料 - ${BASE_TITLE}` },
+      path: '/auth',
+      name: 'auth-home',
+      component: () => import('@/views/auth/AuthHomeView.vue'),
+      meta: { title: `用户中心 - ${BASE_TITLE}` },
     },
     {
       path: '/admin',
@@ -91,7 +91,7 @@ router.beforeEach((to, _from, next) => {
   } else if (to.meta.requiresAdmin && !isAdmin.value) {
     next('/')
   } else if (to.meta.guest && isAuthenticated.value) {
-    next('/auth/profile')
+    next('/auth')
   } else {
     next()
   }

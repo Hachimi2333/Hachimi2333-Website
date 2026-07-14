@@ -43,7 +43,7 @@ async function handleRegister() {
   try {
     const result = await register(email.value, name.value, password.value)
     if (result.success) {
-      router.push('/')
+      router.push('/auth')
     } else {
       error.value = result.message || '注册失败'
     }
