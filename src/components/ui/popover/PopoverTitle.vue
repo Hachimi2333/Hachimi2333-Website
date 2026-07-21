@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
 
@@ -8,10 +8,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <ol
-    data-slot="breadcrumb-list"
-    :class="cn('text-muted-foreground gap-1.5 text-sm flex flex-wrap items-center wrap-break-word', props.class)"
+  <div
+    data-slot="popover-title"
+    :class="cn('text-sm font-medium cn-font-heading', props.class)"
   >
     <slot />
-  </ol>
+  </div>
 </template>

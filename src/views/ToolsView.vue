@@ -26,7 +26,7 @@ const router = useRouter()
         <CardHeader>
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-muted">
                 <component :is="tool.icon" class="h-5 w-5 text-muted-foreground" />
               </div>
               <div>

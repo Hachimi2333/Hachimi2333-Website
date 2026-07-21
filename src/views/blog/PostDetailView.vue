@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import { Calendar, Tag, FolderOpen, ArrowLeft, Clock } from 'lucide-vue-next'
 import { getPostBySlug } from '@/lib/blog'
@@ -103,27 +104,29 @@ watch(() => route.params.slug, () => {
 
       <!-- Post Content -->
       <div class="flex gap-6">
-        <div class="flex-1 min-w-0 max-w-xl">
-          <!-- Cover Image -->
-          <div v-if="post.image" class="mb-8 rounded-lg overflow-hidden">
-            <img
-              :src="post.image"
-              :alt="post.title"
-              class="w-full max-h-96 object-cover"
-              loading="lazy"
-            />
-          </div>
+        <Card class="flex-1 min-w-0 max-w-xl py-0">
+          <div class="p-5">
+            <!-- Cover Image -->
+            <div v-if="post.image" class="mb-8 overflow-hidden">
+              <img
+                :src="post.image"
+                :alt="post.title"
+                class="w-full max-h-96 object-cover"
+                loading="lazy"
+              />
+            </div>
 
-          <article class="prose max-w-none" v-html="renderedContent" @click="handleArticleClick" />
+            <article class="prose max-w-none" v-html="renderedContent" @click="handleArticleClick" />
 
-          <!-- Back to list -->
-          <div class="mt-6">
-            <Button variant="ghost" @click="router.push('/posts')">
-              <ArrowLeft data-icon="inline-start" />
-              返回文章列表
-            </Button>
+            <!-- Back to list -->
+            <div class="mt-6">
+              <Button variant="ghost" @click="router.push('/posts')">
+                <ArrowLeft data-icon="inline-start" />
+                返回文章列表
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
 
         <!-- TOC -->
         <ArticleToc :headings="tocHeadings" />

@@ -19,7 +19,7 @@ function scrollToTop() {
   <Transition name="back-to-top">
     <button
       v-show="show"
-      class="fixed bottom-8 right-4 sm:right-8 z-50 flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border shadow-sm hover:bg-accent transition-colors"
+      class="fixed bottom-8 right-4 sm:right-8 z-50 flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-colors"
       @click="scrollToTop"
       aria-label="回到顶部"
     >

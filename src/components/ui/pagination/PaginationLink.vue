@@ -1,34 +1,35 @@
 <script setup lang="ts">
-import type { PaginationListItemProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import type { ButtonVariants } from '@/components/ui/button'
-import { reactiveOmit } from '@vueuse/core'
-import { PaginationListItem } from 'reka-ui'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 
-const props = withDefaults(defineProps<PaginationListItemProps & {
+const props = withDefaults(defineProps<{
+  href?: string
   size?: ButtonVariants['size']
-  class?: HTMLAttributes['class']
   isActive?: boolean
+  class?: HTMLAttributes['class']
 }>(), {
   size: 'icon',
+  isActive: false,
 })
-
-const delegatedProps = reactiveOmit(props, 'class', 'size', 'isActive')
 </script>
 
 <template>
-  <PaginationListItem
-    data-slot="pagination-item"
-    v-bind="delegatedProps"
+  <a
+    :href="href"
+    data-slot="pagination-link"
+    :data-active="isActive ? '' : undefined"
+    :aria-current="isActive ? 'page' : undefined"
     :class="cn(
       buttonVariants({
         variant: isActive ? 'outline' : 'ghost',
         size,
       }),
-      props.class)"
+      '',
+      props.class,
+    )"
   >
     <slot />
-  </PaginationListItem>
+  </a>
 </template>

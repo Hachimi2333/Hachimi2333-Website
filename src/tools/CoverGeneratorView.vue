@@ -304,16 +304,16 @@ onMounted(() => {
           <span class="tabular-nums shrink-0">1920 × 600 px</span>
           <div class="flex items-center gap-2">
             <div class="relative inline-flex -space-x-px">
-              <Button size="sm" variant="outline" class="rounded-r-none" @click="exportCanvas(exportFormat)">
+              <Button size="sm" variant="outline" class="rounded-none" @click="exportCanvas(exportFormat)">
                 <Download data-icon="inline-start" />
                 下载 {{ exportFormat.toUpperCase() }}
               </Button>
-              <Button size="sm" variant="outline" class="rounded-l-none px-2" @click="toggleFormatMenu">
+              <Button size="sm" variant="outline" class="rounded-none px-2" @click="toggleFormatMenu">
                 <ChevronDown />
               </Button>
               <div
                 v-if="showFormatMenu"
-                class="absolute right-0 top-full mt-1 bg-popover border rounded-md shadow-md z-10 py-1 min-w-[100px]"
+                class="absolute right-0 top-full mt-1 bg-popover border rounded-none shadow-md z-10 py-1 min-w-[100px]"
                 @click.stop
               >
                 <button
@@ -349,7 +349,7 @@ onMounted(() => {
           <CardContent class="space-y-4">
             <div
               v-if="currentIconName || uploadedImageData"
-              class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
+              class="flex items-center gap-2 text-sm bg-muted/40 rounded-none px-3 py-2"
             >
               <Loader2 v-if="iconLoading" class="size-3.5 animate-spin text-muted-foreground shrink-0" />
               <span class="text-muted-foreground shrink-0">当前:</span>
@@ -390,13 +390,13 @@ onMounted(() => {
 
             <div
               v-if="searchResults.length > 0"
-              class="grid grid-cols-8 gap-1 max-h-40 overflow-y-auto p-1.5 bg-muted/30 rounded-lg"
+              class="grid grid-cols-8 gap-1 max-h-40 overflow-y-auto p-1.5 bg-muted/30 rounded-none"
             >
               <button
                 v-for="iconName in searchResults"
                 :key="iconName"
                 :class="cn(
-                  'aspect-square flex items-center justify-center rounded-md border p-0.5 transition-all',
+                  'aspect-square flex items-center justify-center rounded-none border p-0.5 transition-all',
                   currentIconName === iconName && !isUsingUploadedImage
                     ? 'border-primary bg-primary/10 ring-1 ring-primary'
                     : 'border-transparent hover:border-border hover:bg-accent'
@@ -414,7 +414,7 @@ onMounted(() => {
             <div class="border-t pt-4">
               <div
                 v-if="!isUsingUploadedImage"
-                class="border-2 border-dashed border-border rounded-lg p-3 text-center cursor-pointer transition-colors hover:border-primary hover:bg-accent/50"
+                class="border-2 border-dashed border-border rounded-none p-3 text-center cursor-pointer transition-colors hover:border-primary hover:bg-accent/50"
                 @click="($refs.fileInput as HTMLInputElement)?.click()"
                 @dragover.prevent
                 @drop="onFileDrop"
@@ -433,7 +433,7 @@ onMounted(() => {
               </div>
               <div
                 v-else
-                class="flex items-center justify-between bg-primary/10 rounded-lg px-3 py-2"
+                class="flex items-center justify-between bg-primary/10 rounded-none px-3 py-2"
               >
                 <span class="text-sm truncate">{{ uploadedFileName }}</span>
                 <Button variant="ghost" size="icon-sm" @click="clearUploadedImage">

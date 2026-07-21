@@ -9,8 +9,9 @@ const { gitInfo, commitUrl, formattedBody } = useGitInfo()
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <button class="hover:text-foreground transition-colors cursor-pointer font-medium">
-        版本
+      <button class="inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer font-mono text-xs">
+        <GitCommit class="size-3.5" />
+        {{ gitInfo.hash }}
       </button>
     </PopoverTrigger>
     <PopoverContent side="top" :side-offset="8" class="w-80">
@@ -33,7 +34,7 @@ const { gitInfo, commitUrl, formattedBody } = useGitInfo()
         </div>
 
         <!-- Commit Message -->
-        <div class="rounded-md bg-muted/50 p-3">
+        <div class="rounded-none bg-muted/50 p-3">
           <p class="text-sm font-medium">{{ gitInfo.subject }}</p>
           <p v-if="formattedBody" class="mt-2 text-xs text-muted-foreground whitespace-pre-line">{{ formattedBody }}</p>
         </div>
@@ -49,7 +50,7 @@ const { gitInfo, commitUrl, formattedBody } = useGitInfo()
           <span class="diffstat flex items-center gap-[1px]">
             <template v-for="(type, index) in diffstatBlocks" :key="index">
               <span
-                class="inline-block w-[8px] h-[8px] rounded-[1px]"
+                class="inline-block w-[8px] h-[8px] rounded-none"
                 :class="{
                   'bg-[#3fb950]': type === 'green',
                   'bg-[#f85149]': type === 'red',

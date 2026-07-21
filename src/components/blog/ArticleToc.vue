@@ -109,7 +109,7 @@ onUnmounted(() => {
   <Transition name="toc-btn">
     <button
       v-show="headings.length > 0"
-      class="fixed right-4 sm:right-8 z-50 flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden"
+      class="fixed right-4 sm:right-8 z-50 flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden"
       :class="scrolled ? 'bottom-20' : 'bottom-8'"
       @click="panelOpen = true"
       aria-label="文章目录"
@@ -142,7 +142,7 @@ onUnmounted(() => {
           <ul class="flex-1 overflow-y-auto p-4 space-y-1">
             <li v-for="item in tocItems" :key="item.id">
               <button
-                class="block w-full text-left text-sm py-1.5 rounded transition-colors cursor-pointer"
+                class="block w-full text-left text-sm py-1.5 rounded-none transition-colors cursor-pointer"
                 :class="[
                   activeId === item.id
                     ? 'text-foreground font-medium bg-accent'

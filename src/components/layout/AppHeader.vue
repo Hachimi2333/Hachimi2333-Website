@@ -13,7 +13,7 @@ const { isDark, toggleTheme } = useTheme()
         <img
           src="/avatar.webp"
           alt="Hachimi2333"
-          class="size-8 rounded-full object-cover"
+          class="size-8 rounded-none object-cover"
         />
       </router-link>
 
@@ -21,7 +21,7 @@ const { isDark, toggleTheme } = useTheme()
       <div class="flex items-center gap-1">
         <!-- Theme toggle -->
         <button
-          class="inline-flex items-center justify-center size-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+          class="inline-flex items-center justify-center size-9 rounded-none text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
           @click="toggleTheme"
           title="切换主题"
         >

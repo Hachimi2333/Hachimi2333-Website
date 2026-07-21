@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
 
 const BASE_TITLE = 'Hachimi2333'
 
@@ -41,60 +40,11 @@ const router = createRouter({
       component: () => import('@/tools/AppIconGeneratorView.vue'),
       meta: { title: `App 图标生成器 - ${BASE_TITLE}` },
     },
-    {
-      path: '/auth/login',
-      name: 'login',
-      component: () => import('@/views/auth/LoginView.vue'),
-      meta: { title: `登录 - ${BASE_TITLE}`, guest: true },
-    },
-    {
-      path: '/auth/register',
-      name: 'register',
-      component: () => import('@/views/auth/RegisterView.vue'),
-      meta: { title: `注册 - ${BASE_TITLE}`, guest: true },
-    },
-    {
-      path: '/auth',
-      name: 'auth-home',
-      component: () => import('@/views/auth/AuthHomeView.vue'),
-      meta: { title: `用户中心 - ${BASE_TITLE}` },
-    },
-    {
-      path: '/admin',
-      name: 'admin',
-      component: () => import('@/views/admin/AdminView.vue'),
-      meta: { title: `后台管理 - ${BASE_TITLE}`, requiresAuth: true, requiresAdmin: true },
-    },
-    {
-      path: '/:pathMatch(.*)*',
-      name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue'),
-      meta: { title: `404 - ${BASE_TITLE}` },
-    },
   ],
   scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) return savedPosition
     return { top: 0, behavior: 'smooth' }
   },
-})
-
-router.beforeEach((to, _from, next) => {
-  const { isAuthenticated, isAdmin, authInitialized, fetchUser } = useAuth()
-
-  // 首次加载：同步读缓存立即确定状态，API 验证在后台进行
-  if (!authInitialized.value) {
-    fetchUser()
-  }
-
-  if (to.meta.requiresAuth && !isAuthenticated.value) {
-    next({ path: '/auth/login', query: { redirect: to.fullPath } })
-  } else if (to.meta.requiresAdmin && !isAdmin.value) {
-    next('/')
-  } else if (to.meta.guest && isAuthenticated.value) {
-    next('/auth')
-  } else {
-    next()
-  }
 })
 
 router.afterEach((to) => {

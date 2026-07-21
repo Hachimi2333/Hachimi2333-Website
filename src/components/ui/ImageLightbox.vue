@@ -178,7 +178,7 @@ onUnmounted(() => {
         @touchend="onTouchEnd"
       >
         <button
-          class="absolute top-4 right-4 flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+          class="absolute top-4 right-4 flex items-center justify-center size-10 rounded-none bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
           @click="emit('close')"
         >
           <X />
@@ -191,7 +191,7 @@ onUnmounted(() => {
             cursor: isDragging ? 'grabbing' : 'grab',
             transition: isDragging ? 'none' : 'transform 0.15s ease',
           }"
-          class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl select-none touch-none"
+          class="max-w-[90vw] max-h-[90vh] object-contain rounded-none shadow-2xl select-none touch-none"
           draggable="false"
           @mousedown.prevent="onDragStart"
           @mousemove="onDragMove"

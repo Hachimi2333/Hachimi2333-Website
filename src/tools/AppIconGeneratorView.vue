@@ -139,7 +139,7 @@ onMounted(() => {
       <!-- Preview -->
       <Card class="py-0">
         <div class="flex items-center justify-center bg-muted border-b p-6">
-          <div class="aspect-square w-full max-w-[320px] bg-white rounded-xl overflow-hidden border shadow-sm">
+          <div class="aspect-square w-full max-w-[320px] bg-white rounded-none overflow-hidden border shadow-sm">
             <canvas
               ref="canvasRef"
               width="1024"
@@ -176,7 +176,7 @@ onMounted(() => {
           <CardContent class="space-y-4">
             <div
               v-if="currentIcon"
-              class="flex items-center gap-2 text-sm bg-muted/40 rounded-lg px-3 py-2"
+              class="flex items-center gap-2 text-sm bg-muted/40 rounded-none px-3 py-2"
             >
               <Loader2 v-if="iconLoading" class="size-3.5 animate-spin text-muted-foreground shrink-0" />
               <span class="text-muted-foreground shrink-0">当前:</span>
@@ -215,13 +215,13 @@ onMounted(() => {
 
             <div
               v-if="searchResults.length > 0"
-              class="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto p-1.5 bg-muted/30 rounded-lg"
+              class="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto p-1.5 bg-muted/30 rounded-none"
             >
               <button
                 v-for="iconName in searchResults"
                 :key="iconName"
                 :class="cn(
-                  'aspect-square flex items-center justify-center rounded-md border p-0.5 transition-all',
+                  'aspect-square flex items-center justify-center rounded-none border p-0.5 transition-all',
                   currentIcon === iconName
                     ? 'border-primary bg-primary/10 ring-1 ring-primary'
                     : 'border-transparent hover:border-border hover:bg-accent'
@@ -285,7 +285,7 @@ onMounted(() => {
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-sm flex items-center gap-1.5">
-                  <span class="w-3.5 h-3.5 rounded-full border border-input shrink-0" :style="{ background: bgColor }" />
+                  <span class="w-3.5 h-3.5 rounded-none border border-input shrink-0" :style="{ background: bgColor }" />
                   背景颜色
                 </span>
                 <ColorPicker

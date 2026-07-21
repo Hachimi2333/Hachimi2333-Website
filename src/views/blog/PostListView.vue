@@ -69,7 +69,7 @@ function extractDescription(post: { description: string; content: string }): str
 
     <!-- Tabs + Search -->
     <Tabs v-model="activeTab" class="mb-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
         <TabsList>
           <TabsTrigger value="articles">
             <FileText data-icon="inline-start" />
@@ -82,8 +82,8 @@ function extractDescription(post: { description: string; content: string }): str
         </TabsList>
 
         <Transition name="search-fade">
-          <div v-if="activeTab === 'articles'" class="w-full sm:w-auto sm:min-w-[240px] mb-2 sm:mb-0">
-            <InputGroup>
+          <div v-if="activeTab === 'articles'" class="flex-1 min-w-0">
+            <InputGroup class="h-8">
               <InputGroupInput v-model="searchQuery" placeholder="搜索文章..." />
               <InputGroupAddon>
                 <Search />
@@ -175,7 +175,7 @@ function extractDescription(post: { description: string; content: string }): str
     <div v-else key="archives" class="space-y-6">
       <div v-for="group in yearArchives" :key="group.year">
         <div class="flex items-center gap-3 mb-3">
-          <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+          <div class="w-2.5 h-2.5 rounded-none bg-primary"></div>
           <h3 class="text-lg font-semibold text-foreground">{{ group.label }}年</h3>
           <Badge variant="outline">{{ group.posts.length }} 篇</Badge>
         </div>
@@ -187,7 +187,7 @@ function extractDescription(post: { description: string; content: string }): str
             class="group relative flex items-center gap-3 py-2 cursor-pointer"
             @click="router.push(`/posts/${post.slug}`)"
           >
-            <div class="absolute -left-[1.45rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary ring-2 ring-background"></div>
+            <div class="absolute -left-[1.45rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-none bg-border group-hover:bg-primary ring-2 ring-background"></div>
 
             <span class="text-xs text-muted-foreground font-mono w-12 shrink-0">{{ formatMonthDay(post.published) }}</span>
             <span class="text-sm font-medium text-foreground min-w-0 truncate">

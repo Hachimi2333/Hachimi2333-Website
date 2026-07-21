@@ -4,6 +4,7 @@
 @import "tailwindcss";
 
 @import "tw-animate-css";
+@import "shadcn-vue/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -22,20 +23,20 @@
   ol { @apply list-decimal; }
   li { @apply my-1; }
   blockquote {
-    @apply border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground my-4 bg-muted/30 py-2 pr-2 rounded-r;
+    @apply border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground my-4 bg-muted/30 py-2 pr-2 rounded-none;
   }
   hr { @apply my-8 border-border; }
-  img { @apply max-w-full rounded-lg my-4 cursor-zoom-in; }
+  img { @apply max-w-full rounded-none my-4 cursor-zoom-in; }
   table {
     @apply w-full border-collapse my-4;
     th, td { @apply border border-border px-4 py-2; }
     th { @apply bg-muted font-semibold; }
   }
   pre {
-    @apply my-4 overflow-x-auto rounded-lg p-4 bg-[#f6f8fa] text-sm border border-border;
+    @apply my-4 overflow-x-auto rounded-none p-4 bg-[#f6f8fa] text-sm border border-border;
   }
   code {
-    @apply rounded bg-muted px-1.5 py-0.5 text-sm font-mono;
+    @apply rounded-none bg-muted px-1.5 py-0.5 text-sm font-mono;
   }
   pre code {
     @apply bg-transparent p-0;
@@ -85,10 +86,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: 'Inter', sans-serif;
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -107,11 +109,11 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -142,11 +144,11 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -163,5 +165,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    @apply font-sans;
   }
 }

@@ -56,7 +56,7 @@ const presets = [
         class="h-8 w-8 p-0 border-input"
         :class="disabled ? 'opacity-40 cursor-not-allowed' : ''"
       >
-        <span class="h-5 w-5 rounded-sm border border-input" :style="{ background: modelValue }" />
+        <span class="h-5 w-5 rounded-none border border-input" :style="{ background: modelValue }" />
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-3" align="end">
@@ -65,14 +65,14 @@ const presets = [
           <button
             v-for="color in presets"
             :key="color"
-            class="h-6 w-6 rounded-sm border border-input transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+            class="h-6 w-6 rounded-none border border-input transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             :class="modelValue === color ? 'ring-2 ring-ring ring-offset-1' : ''"
             :style="{ background: color }"
             @click="selectPreset(color)"
           />
         </div>
         <div class="flex items-center gap-2">
-          <div class="relative h-8 w-8 shrink-0 rounded-md border border-input overflow-hidden cursor-pointer">
+          <div class="relative h-8 w-8 shrink-0 rounded-none border border-input overflow-hidden cursor-pointer">
             <div class="absolute inset-0" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);" />
             <input
               type="color"

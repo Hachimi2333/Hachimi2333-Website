@@ -15,9 +15,9 @@ const router = useRouter()
           <img
             src="/avatar.webp"
             alt="Hachimi2333"
-            class="w-32 h-32 rounded-full object-cover shadow-lg"
+            class="w-32 h-32 rounded-none object-cover shadow-lg"
           />
-          <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-background"></div>
+          <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-none border-4 border-background"></div>
         </div>
       </div>
 
