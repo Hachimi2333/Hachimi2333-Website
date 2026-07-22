@@ -108,8 +108,8 @@ onUnmounted(() => {
   <!-- Mobile floating button -->
   <Transition name="toc-btn">
     <button
-      v-show="headings.length > 0"
-      class="fixed right-4 sm:right-8 z-50 flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden"
+      v-if="headings.length > 0"
+      class="fixed z-[100] right-4 sm:right-8 flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden"
       :class="scrolled ? 'bottom-20' : 'bottom-8'"
       @click="panelOpen = true"
       aria-label="文章目录"
@@ -128,27 +128,27 @@ onUnmounted(() => {
       >
         <div class="absolute inset-0 bg-black/40" @click="panelOpen = false" />
 
-        <div class="absolute top-0 right-0 h-full w-72 max-w-[80vw] bg-background border-l border-border shadow-lg flex flex-col">
-          <div class="flex items-center justify-between p-4 border-b border-border">
-            <p class="text-sm font-medium">目录</p>
+        <div class="absolute top-0 right-0 h-full w-72 max-w-[80vw] bg-background border-l border-border shadow-2xl flex flex-col">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <p class="text-sm font-semibold text-foreground">目录</p>
             <button
-              class="text-muted-foreground hover:text-foreground transition-colors"
+              class="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               @click="panelOpen = false"
               aria-label="关闭"
             >
-              <X class="w-5 h-5" />
+              <X class="w-4 h-4" />
             </button>
           </div>
-          <ul class="flex-1 overflow-y-auto p-4 space-y-1">
+          <ul class="flex-1 overflow-y-auto py-2">
             <li v-for="item in tocItems" :key="item.id">
               <button
-                class="block w-full text-left text-sm py-1.5 rounded-none transition-colors cursor-pointer"
+                class="w-full text-left text-sm px-5 py-2 transition-colors cursor-pointer border-l-2"
                 :class="[
                   activeId === item.id
-                    ? 'text-foreground font-medium bg-accent'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    ? 'text-foreground font-medium border-primary bg-accent/60'
+                    : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-accent/40',
                 ]"
-                :style="{ paddingLeft: `${(item.indent * 12) + 12}px` }"
+                :style="{ paddingLeft: `${(item.indent * 12) + 20}px` }"
                 @click="scrollToHeading(item.id)"
               >
                 {{ item.display }}

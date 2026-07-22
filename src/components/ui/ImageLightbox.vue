@@ -180,6 +180,7 @@ onUnmounted(() => {
         <button
           class="absolute top-4 right-4 flex items-center justify-center size-10 rounded-none bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
           @click="emit('close')"
+          @touchstart.stop
         >
           <X />
         </button>

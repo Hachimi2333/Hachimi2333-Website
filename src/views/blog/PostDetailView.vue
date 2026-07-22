@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useWindowScroll } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
@@ -15,15 +16,19 @@ import { getHeadingList, resetHeadings } from 'marked-gfm-heading-id'
 import type { BlogPost } from '@/types/blog'
 
 const route = useRoute()
+const { y: scrollY } = useWindowScroll()
+const scrolled = computed(() => scrollY.value > 300)
 const post = ref<BlogPost | undefined>()
 const renderedContent = ref('')
 const readingTime = ref('')
 const tocHeadings = ref<{ level: number; id: string; text: string }[]>([])
 const loading = ref(true)
+const hasToc = computed(() => tocHeadings.value.length > 0)
+const backAtRight = computed(() => !hasToc.value && !scrolled.value)
 
-const backTo = computed(() => {
+const backTo = computed<{ path: string; query?: Record<string, string> }>(() => {
   const page = route.query.from
-  return page ? { path: '/posts', query: { page } } : '/posts'
+  return page ? { path: '/posts', query: { page: String(page) } } : { path: '/posts' }
 })
 
 const lightboxVisible = ref(false)
@@ -96,12 +101,6 @@ watch(() => route.params.slug, () => {
         </div>
       </header>
 
-      <div class="mb-4 lg:hidden">
-        <Card>
-          <Skeleton class="h-10 w-full" />
-        </Card>
-      </div>
-
       <div class="flex gap-6">
         <Card class="flex-1 min-w-0 max-w-xl py-0">
           <div class="p-5 space-y-4">
@@ -159,18 +158,6 @@ watch(() => route.params.slug, () => {
         </div>
       </header>
 
-      <!-- Mobile back button -->
-      <div class="mb-4 lg:hidden">
-        <Card>
-          <Button variant="ghost" class="w-full justify-start cursor-default" as-child>
-            <router-link :to="backTo">
-              <ArrowLeft class="mr-2 h-4 w-4" />
-              返回文章列表
-            </router-link>
-          </Button>
-        </Card>
-      </div>
-
       <!-- Post Content -->
       <div class="flex gap-6">
         <Card class="flex-1 min-w-0 max-w-xl py-0">
@@ -185,11 +172,11 @@ watch(() => route.params.slug, () => {
               />
             </div>
 
-            <article class="prose max-w-none" v-html="renderedContent" @click="handleArticleClick" />
+            <article class="prose max-w-none scroll-mt-20" v-html="renderedContent" @click="handleArticleClick" />
           </div>
         </Card>
 
-        <!-- Sidebar: Back button + TOC -->
+        <!-- Desktop sidebar: Back button + TOC -->
         <div class="hidden lg:block w-56 shrink-0 space-y-4 sticky top-20 self-start">
           <Card>
             <Button variant="ghost" class="w-full justify-start cursor-default" as-child>
@@ -202,6 +189,19 @@ watch(() => route.params.slug, () => {
           <ArticleToc :headings="tocHeadings" />
         </div>
       </div>
+
+      <!-- Mobile floating buttons (Back + TOC) -->
+      <Transition name="toc-btn">
+        <button
+          class="fixed z-[100] flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden bottom-8"
+          :class="backAtRight ? 'right-4 sm:right-8' : 'right-16 sm:right-20'"
+          aria-label="返回文章列表"
+          @click="$router.push(backTo)"
+        >
+          <ArrowLeft class="w-5 h-5 text-foreground" />
+        </button>
+      </Transition>
+      <ArticleToc :headings="tocHeadings" />
     </template>
 
     <!-- Not found -->

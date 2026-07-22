@@ -26,7 +26,7 @@ const colDelays = Array.from({ length: cols }, () => Math.random() * 4)
     </div>
 
     <AppHeader v-if="route.path !== '/'" class="relative z-10" />
-    <main class="relative z-10 flex-1 flex flex-col">
+    <main class="relative z-20 flex-1 flex flex-col">
       <router-view v-slot="{ Component, route }">
         <Transition name="fade" mode="out-in">
           <component :is="Component" :key="route.path" />
