@@ -9,6 +9,7 @@ import { getPostBySlug } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
 import { formatDate } from '@/lib/date'
 import ImageLightbox from '@/components/ui/ImageLightbox.vue'
+import { Skeleton } from '@/components/ui/skeleton'
 import ArticleToc from '@/components/blog/ArticleToc.vue'
 import { getHeadingList, resetHeadings } from 'marked-gfm-heading-id'
 import type { BlogPost } from '@/types/blog'
@@ -18,6 +19,7 @@ const post = ref<BlogPost | undefined>()
 const renderedContent = ref('')
 const readingTime = ref('')
 const tocHeadings = ref<{ level: number; id: string; text: string }[]>([])
+const loading = ref(true)
 
 const backTo = computed(() => {
   const page = route.query.from
@@ -53,6 +55,7 @@ function updateReadingTime(content: string) {
 }
 
 async function loadPost() {
+  loading.value = true
   const slug = route.params.slug as string
   post.value = getPostBySlug(slug)
   if (post.value) {
@@ -66,6 +69,7 @@ async function loadPost() {
     document.title = '文章未找到 - Hachimi2333'
     tocHeadings.value = []
   }
+  loading.value = false
 }
 
 onMounted(() => {
@@ -79,7 +83,56 @@ watch(() => route.params.slug, () => {
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <template v-if="post">
+    <!-- Loading skeleton -->
+    <template v-if="loading">
+      <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: '加载中...' }]" />
+
+      <header class="mb-6">
+        <Skeleton class="h-9 w-3/4 mb-4" />
+        <div class="flex flex-wrap items-center gap-4">
+          <Skeleton class="h-4 w-24" />
+          <Skeleton class="h-4 w-20" />
+          <Skeleton class="h-4 w-16" />
+        </div>
+      </header>
+
+      <div class="mb-4 lg:hidden">
+        <Card>
+          <Skeleton class="h-10 w-full" />
+        </Card>
+      </div>
+
+      <div class="flex gap-6">
+        <Card class="flex-1 min-w-0 max-w-xl py-0">
+          <div class="p-5 space-y-4">
+            <Skeleton class="h-64 w-full" />
+            <Skeleton class="h-4 w-full" />
+            <Skeleton class="h-4 w-5/6" />
+            <Skeleton class="h-4 w-4/6" />
+            <Skeleton class="h-4 w-full" />
+            <Skeleton class="h-4 w-3/4" />
+          </div>
+        </Card>
+
+        <div class="hidden lg:block w-56 shrink-0 space-y-4 sticky top-20 self-start">
+          <Card>
+            <Skeleton class="h-10 w-full" />
+          </Card>
+          <Card>
+            <div class="p-4 space-y-3">
+              <Skeleton class="h-4 w-20" />
+              <Skeleton class="h-3 w-full" />
+              <Skeleton class="h-3 w-5/6" />
+              <Skeleton class="h-3 w-4/6" />
+              <Skeleton class="h-3 w-full" />
+            </div>
+          </Card>
+        </div>
+      </div>
+    </template>
+
+    <!-- Loaded: post found -->
+    <template v-else-if="post">
       <!-- Breadcrumb -->
       <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: post.title }]" />
 
