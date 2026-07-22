@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
@@ -14,7 +14,6 @@ import { getHeadingList, resetHeadings } from 'marked-gfm-heading-id'
 import type { BlogPost } from '@/types/blog'
 
 const route = useRoute()
-const router = useRouter()
 const post = ref<BlogPost | undefined>()
 const renderedContent = ref('')
 const readingTime = ref('')
