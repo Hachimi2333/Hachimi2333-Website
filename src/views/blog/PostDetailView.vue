@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -19,6 +19,11 @@ const post = ref<BlogPost | undefined>()
 const renderedContent = ref('')
 const readingTime = ref('')
 const tocHeadings = ref<{ level: number; id: string; text: string }[]>([])
+
+const backTo = computed(() => {
+  const page = route.query.from
+  return page ? { path: '/posts', query: { page } } : '/posts'
+})
 
 const lightboxVisible = ref(false)
 const lightboxSrc = ref('')
@@ -102,6 +107,18 @@ watch(() => route.params.slug, () => {
         </div>
       </header>
 
+      <!-- Mobile back button -->
+      <div class="mb-4 lg:hidden">
+        <Card>
+          <Button variant="ghost" class="w-full justify-start cursor-default" as-child>
+            <router-link :to="backTo">
+              <ArrowLeft class="mr-2 h-4 w-4" />
+              返回文章列表
+            </router-link>
+          </Button>
+        </Card>
+      </div>
+
       <!-- Post Content -->
       <div class="flex gap-6">
         <Card class="flex-1 min-w-0 max-w-xl py-0">
@@ -117,19 +134,21 @@ watch(() => route.params.slug, () => {
             </div>
 
             <article class="prose max-w-none" v-html="renderedContent" @click="handleArticleClick" />
-
-            <!-- Back to list -->
-            <div class="mt-6">
-              <Button variant="ghost" @click="router.push('/posts')">
-                <ArrowLeft data-icon="inline-start" />
-                返回文章列表
-              </Button>
-            </div>
           </div>
         </Card>
 
-        <!-- TOC -->
-        <ArticleToc :headings="tocHeadings" />
+        <!-- Sidebar: Back button + TOC -->
+        <div class="hidden lg:block w-56 shrink-0 space-y-4 sticky top-20 self-start">
+          <Card>
+            <Button variant="ghost" class="w-full justify-start cursor-default" as-child>
+              <router-link :to="backTo">
+                <ArrowLeft class="mr-2 h-4 w-4" />
+                返回文章列表
+              </router-link>
+            </Button>
+          </Card>
+          <ArticleToc :headings="tocHeadings" />
+        </div>
       </div>
     </template>
 
@@ -138,9 +157,11 @@ watch(() => route.params.slug, () => {
       <div class="text-center py-24">
         <h1 class="text-2xl font-bold mb-2">文章未找到</h1>
         <p class="text-muted-foreground mb-6">你访问的文章不存在</p>
-        <Button @click="router.push('/posts')">
-          <ArrowLeft data-icon="inline-start" />
-          返回博客
+        <Button as-child>
+          <router-link :to="backTo">
+            <ArrowLeft class="mr-2 h-4 w-4" />
+            返回博客
+          </router-link>
         </Button>
       </div>
     </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { InputGroup, InputGroupInput, InputGroupAddon } from '@/components/ui/input-group'
@@ -17,13 +17,14 @@ import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
 import { formatDate, formatMonthDay } from '@/lib/date'
 
+const route = useRoute()
 const router = useRouter()
 const activeTab = ref('articles')
 const searchQuery = ref('')
 
 const allPosts = getAllPosts()
 const pageSize = 5
-const currentPage = ref(1)
+const currentPage = ref(Number(route.query.page) || 1)
 
 const filteredPosts = computed(() => {
   if (searchQuery.value) {
@@ -41,8 +42,9 @@ watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-watch(currentPage, () => {
+watch(currentPage, (page) => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  router.replace({ query: { ...route.query, page: page > 1 ? String(page) : undefined } })
 })
 
 const yearArchives = computed(() => getArchivesByYear())
@@ -101,7 +103,7 @@ function extractDescription(post: { description: string; content: string }): str
         v-for="post in paginatedPosts"
         :key="post.slug"
         class="cursor-pointer overflow-hidden py-0"
-        @click="router.push(`/posts/${post.slug}`)"
+        @click="router.push({ path: `/posts/${post.slug}`, query: { from: currentPage } })"
       >
         <div class="md:flex">
           <div class="flex-1 flex flex-col p-5 min-w-0">
@@ -174,8 +176,8 @@ function extractDescription(post: { description: string; content: string }): str
     <!-- Archives -->
     <div v-else key="archives" class="space-y-6">
       <div v-for="group in yearArchives" :key="group.year">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-2.5 h-2.5 rounded-none bg-primary"></div>
+        <div class="flex items-center gap-3 mb-3 ml-[0.6875rem]">
+          <div class="w-2.5 h-2.5 rounded-none bg-primary shrink-0"></div>
           <h3 class="text-lg font-semibold text-foreground">{{ group.label }}年</h3>
           <Badge variant="outline">{{ group.posts.length }} 篇</Badge>
         </div>
@@ -185,7 +187,7 @@ function extractDescription(post: { description: string; content: string }): str
             v-for="post in group.posts"
             :key="post.slug"
             class="group relative flex items-center gap-3 py-2 cursor-pointer"
-            @click="router.push(`/posts/${post.slug}`)"
+            @click="router.push({ path: `/posts/${post.slug}`, query: { from: currentPage } })"
           >
             <div class="absolute -left-[1.45rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-none bg-border group-hover:bg-primary ring-2 ring-background"></div>
 
