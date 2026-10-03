@@ -105,18 +105,20 @@ onUnmounted(() => {
     </Card>
   </aside>
 
-  <!-- Mobile floating button -->
-  <Transition name="toc-btn">
-    <button
-      v-if="headings.length > 0"
-      class="fixed z-[100] right-4 sm:right-8 flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden"
-      :class="scrolled ? 'bottom-20' : 'bottom-8'"
-      @click="panelOpen = true"
-      aria-label="文章目录"
-    >
-      <List class="w-5 h-5 text-foreground" />
-    </button>
-  </Transition>
+  <!-- Mobile floating button (teleported to body) -->
+  <Teleport to="body">
+    <Transition name="toc-btn">
+      <button
+        v-if="headings.length > 0"
+        class="fixed z-[100] right-4 sm:right-8 flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden"
+        :class="scrolled ? 'bottom-20' : 'bottom-8'"
+        @click="panelOpen = true"
+        aria-label="文章目录"
+      >
+        <List class="w-5 h-5 text-foreground" />
+      </button>
+    </Transition>
+  </Teleport>
 
   <!-- Mobile slide-in panel -->
   <Teleport to="body">

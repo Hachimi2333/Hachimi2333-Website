@@ -28,6 +28,7 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@shikijs/transformers": "^4.3.1",
     "@tailwindcss/vite": "^4.2.4",
     "@types/js-yaml": "^4.0.9",
     "@types/marked": "^5.0.2",

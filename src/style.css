@@ -39,7 +39,7 @@
     @apply rounded-none bg-muted px-1.5 py-0.5 text-sm font-mono;
   }
   pre code {
-    @apply bg-transparent p-0;
+    @apply bg-transparent p-0 block;
   }
 }
 
@@ -47,6 +47,100 @@
   pre {
     @apply bg-[#161b22];
   }
+}
+
+/* Shiki code block: title bar */
+.prose pre:has(.shiki-title) {
+  @apply p-0;
+}
+.shiki-title {
+  @apply px-4 py-2 text-xs font-mono text-foreground bg-muted border-b border-border;
+}
+.prose pre:has(.shiki-title) > code {
+  @apply block p-4;
+}
+
+/* Shiki code block: make all lines block-level for proper background rendering */
+.prose pre code .line {
+  @apply block;
+  white-space: pre;
+  min-width: max-content;
+}
+
+/* Shiki code block: git diff lines */
+.prose pre code .line.diff {
+  @apply relative;
+}
+.prose pre code .line.diff.ins {
+  @apply bg-green-500/15;
+}
+.prose pre code .line.diff.del {
+  @apply bg-red-500/15;
+}
+.prose pre code .line.diff::before {
+  @apply absolute left-2 w-4 text-center font-bold select-none text-xs top-1/2 -translate-y-1/2;
+}
+.prose pre code .line.diff.ins::before {
+  content: '+';
+  @apply text-green-600;
+}
+.prose pre code .line.diff.del::before {
+  content: '−';
+  @apply text-red-500;
+}
+.prose pre code.has-diff .line {
+  @apply pl-7;
+}
+
+/* Shiki code block: line highlight */
+.prose pre code .line.highlighted {
+  @apply bg-yellow-500/10 -mx-4 px-4;
+}
+
+/* Code block: copy button (shadcn ghost style) */
+.prose pre {
+  position: relative;
+}
+.prose pre .copy-btn {
+  @apply absolute top-2 right-2 z-10 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-none text-sm font-medium transition-colors cursor-pointer border border-border bg-background text-muted-foreground;
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  opacity: 0;
+}
+.prose pre:hover .copy-btn,
+.prose pre .copy-btn:focus-visible {
+  opacity: 1;
+}
+.prose pre .copy-btn:hover {
+  @apply bg-accent text-accent-foreground;
+}
+.prose pre .copy-btn:focus-visible {
+  @apply outline-none ring-1 ring-ring;
+}
+.prose pre .copy-btn.copied {
+  @apply text-green-600 border-green-600;
+}
+
+/* Scrollbar: square corner style */
+.prose pre::-webkit-scrollbar {
+  @apply h-2;
+}
+.prose pre::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.prose pre::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-none;
+}
+.prose pre::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/40;
+}
+
+.dark .prose pre code .line.diff.ins {
+  @apply bg-green-400/20;
+}
+.dark .prose pre code .line.diff.del {
+  @apply bg-red-400/20;
 }
 
 @theme inline {

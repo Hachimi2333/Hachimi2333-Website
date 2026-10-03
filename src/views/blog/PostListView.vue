@@ -103,7 +103,7 @@ function extractDescription(post: { description: string; content: string }): str
         v-for="post in paginatedPosts"
         :key="post.slug"
         class="cursor-pointer overflow-hidden py-0"
-        @click="router.push({ path: `/posts/${post.slug}`, query: { from: currentPage } })"
+        @click="router.push(`/posts/${post.slug}`)"
       >
         <div class="md:flex">
           <div class="flex-1 flex flex-col p-5 min-w-0">
@@ -187,7 +187,7 @@ function extractDescription(post: { description: string; content: string }): str
             v-for="post in group.posts"
             :key="post.slug"
             class="group relative flex items-center gap-3 py-2 cursor-pointer"
-            @click="router.push({ path: `/posts/${post.slug}`, query: { from: currentPage } })"
+            @click="router.push(`/posts/${post.slug}`)"
           >
             <div class="absolute -left-[1.45rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-none bg-border group-hover:bg-primary ring-2 ring-background"></div>
 

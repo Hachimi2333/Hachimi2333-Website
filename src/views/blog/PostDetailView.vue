@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useWindowScroll } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -16,6 +16,7 @@ import { getHeadingList, resetHeadings } from 'marked-gfm-heading-id'
 import type { BlogPost } from '@/types/blog'
 
 const route = useRoute()
+const router = useRouter()
 const { y: scrollY } = useWindowScroll()
 const scrolled = computed(() => scrollY.value > 300)
 const post = ref<BlogPost | undefined>()
@@ -26,10 +27,13 @@ const loading = ref(true)
 const hasToc = computed(() => tocHeadings.value.length > 0)
 const backAtRight = computed(() => !hasToc.value && !scrolled.value)
 
-const backTo = computed<{ path: string; query?: Record<string, string> }>(() => {
-  const page = route.query.from
-  return page ? { path: '/posts', query: { page: String(page) } } : { path: '/posts' }
-})
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/posts')
+  }
+}
 
 const lightboxVisible = ref(false)
 const lightboxSrc = ref('')
@@ -177,13 +181,11 @@ watch(() => route.params.slug, () => {
         </Card>
 
         <!-- Desktop sidebar: Back button + TOC -->
-        <div class="hidden lg:block w-56 shrink-0 space-y-4 sticky top-20 self-start">
+        <div class="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 lg:space-y-4 lg:sticky lg:top-20 lg:self-start">
           <Card>
-            <Button variant="ghost" class="w-full justify-start cursor-default" as-child>
-              <router-link :to="backTo">
-                <ArrowLeft class="mr-2 h-4 w-4" />
-                返回文章列表
-              </router-link>
+            <Button variant="ghost" class="w-full justify-start cursor-default" @click="goBack">
+              <ArrowLeft class="mr-2 h-4 w-4" />
+              返回文章列表
             </Button>
           </Card>
           <ArticleToc :headings="tocHeadings" />
@@ -196,12 +198,11 @@ watch(() => route.params.slug, () => {
           class="fixed z-[100] flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden bottom-8"
           :class="backAtRight ? 'right-4 sm:right-8' : 'right-16 sm:right-20'"
           aria-label="返回文章列表"
-          @click="$router.push(backTo)"
+          @click="goBack"
         >
           <ArrowLeft class="w-5 h-5 text-foreground" />
         </button>
       </Transition>
-      <ArticleToc :headings="tocHeadings" />
     </template>
 
     <!-- Not found -->
@@ -209,11 +210,9 @@ watch(() => route.params.slug, () => {
       <div class="text-center py-24">
         <h1 class="text-2xl font-bold mb-2">文章未找到</h1>
         <p class="text-muted-foreground mb-6">你访问的文章不存在</p>
-        <Button as-child>
-          <router-link :to="backTo">
-            <ArrowLeft class="mr-2 h-4 w-4" />
-            返回博客
-          </router-link>
+        <Button @click="goBack">
+          <ArrowLeft class="mr-2 h-4 w-4" />
+          返回博客
         </Button>
       </div>
     </template>
