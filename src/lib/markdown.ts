@@ -1,136 +1,218 @@
 import { Marked } from 'marked'
-import { gfmHeadingId } from 'marked-gfm-heading-id'
-import { renderer, parseCodeMeta } from './renderer'
-import type { ShikiTransformer } from 'shiki'
+import { createHighlighterCore, type HighlighterCore } from 'shiki/core'
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import type { Element } from 'hast'
+import type { ShikiTransformer } from 'shiki'
+import { createBlogRenderer, decodeAttr, escapeHtml, type CodeMeta, type TocHeading } from './renderer'
 
-const marked = new Marked(gfmHeadingId(), { renderer })
+export type { TocHeading } from './renderer'
 
-// 每次 renderMarkdown 调用时重置
-let currentMetaIndex = 0
-let currentMetaList: { title: string | null; del: number[]; ins: number[] }[] = []
+export interface RenderedMarkdown {
+  html: string
+  headings: TocHeading[]
+}
 
-function createDiffTransformer(): ShikiTransformer {
+/**
+ * Languages registered with Shiki.
+ *
+ * This is a fine-grained bundle on purpose. `await import('shiki')` pulls in the
+ * full bundle, which made Vite emit one chunk per grammar — 324 files / ~9.7 MB
+ * of assets for a blog whose posts only use five languages. Adding a language
+ * here costs one small chunk; bundling them all costs nothing extra.
+ * `content/posts/*.md` currently uses: powershell, vue, astro, css, txt.
+ */
+const LANGUAGE_IMPORTS = [
+  import('@shikijs/langs/powershell'),
+  import('@shikijs/langs/vue'),
+  import('@shikijs/langs/astro'),
+  import('@shikijs/langs/css'),
+]
+
+const THEME_IMPORTS = {
+  light: import('@shikijs/themes/github-light'),
+  dark: import('@shikijs/themes/github-dark'),
+}
+
+const CODE_BLOCK_SOURCE =
+  '<pre><code class="language-([^"]*)" data-code-info="([^"]*)">([\\s\\S]*?)<\\/code><\\/pre>'
+
+let highlighterPromise: Promise<HighlighterCore> | null = null
+
+/**
+ * Lazily create the Shiki highlighter exactly once.
+ *
+ * The JavaScript regex engine is used instead of the default Oniguruma/WASM
+ * engine: it removes a ~620 KB WebAssembly chunk from the bundle, and its
+ * grammar support is sufficient for the languages registered above.
+ */
+function getHighlighter(): Promise<HighlighterCore> {
+  highlighterPromise ??= createHighlighterCore({
+    themes: [THEME_IMPORTS.light, THEME_IMPORTS.dark],
+    langs: LANGUAGE_IMPORTS,
+    engine: createJavaScriptRegexEngine(),
+  })
+  return highlighterPromise
+}
+
+function decodeEntities(value: string): string {
+  // Reverse of `escapeHtml`, in reverse escape order.
+  return value
+    .replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&')
+}
+
+/**
+ * Transformer carrying one code block's metadata.
+ *
+ * The metadata is captured per block instead of being read from module state, so
+ * highlighting two posts concurrently can no longer cross-contaminate them.
+ */
+function codeMetaTransformer(meta: CodeMeta): ShikiTransformer {
   return {
-    name: 'code-diff',
+    name: 'blog-code-meta',
     enforce: 'pre',
-    code(codeEl) {
-      const meta = currentMetaList[currentMetaIndex]
-      currentMetaIndex++
-      if (!meta) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ctx = this as any
+    code(node) {
+      if (meta.del.length === 0 && meta.ins.length === 0) return
 
-      const lineSpans = codeEl.children.filter(
-        (c: any) => c.type === 'element' && c.tagName === 'span' && c.properties?.class?.includes('line')
-      ) as Element[]
+      const lines = node.children.filter(
+        (child): child is Element =>
+          child.type === 'element' && child.tagName === 'span',
+      )
 
-      for (let i = 0; i < lineSpans.length; i++) {
-        const lineNum = i + 1
-        const span = lineSpans[i]
-        if (meta.del.includes(lineNum)) {
-          ctx.addClassToHast(span, 'diff del')
-        }
-        if (meta.ins.includes(lineNum)) {
-          ctx.addClassToHast(span, 'diff ins')
-        }
-      }
+      lines.forEach((line, index) => {
+        const lineNumber = index + 1
+        if (meta.del.includes(lineNumber)) this.addClassToHast(line, 'diff del')
+        if (meta.ins.includes(lineNumber)) this.addClassToHast(line, 'diff ins')
+      })
 
-      if (meta.del.length || meta.ins.length) {
-        ctx.addClassToHast(codeEl, 'has-diff')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const preEl = (codeEl as any).parent as Element | undefined
-        if (preEl) ctx.addClassToHast(preEl, 'has-diff')
+      this.addClassToHast(node, 'has-diff')
+    },
+
+    pre(node) {
+      // Mark the `<pre>` too so the shared gutter styles apply. The `pre` hook
+      // runs on the outer element, so there is no parent lookup here.
+      if (meta.del.length > 0 || meta.ins.length > 0) {
+        this.addClassToHast(node, 'has-diff')
       }
 
       if (meta.title) {
-        ctx.options._shikiTitle = meta.title
-      }
-    },
-    pre(preEl) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ctx = this as any
-
-      // 标题栏
-      const title = ctx.options._shikiTitle as string | undefined
-      if (title) {
-        const titleBar: Element = {
+        node.children.unshift({
           type: 'element',
           tagName: 'div',
           properties: { class: 'shiki-title' },
-          children: [{ type: 'text', value: title }],
-        }
-        preEl.children.unshift(titleBar)
+          children: [{ type: 'text', value: meta.title }],
+        })
       }
 
-      // 复制按钮
-      const copyBtn: Element = {
+      // The click handler lives in PostDetailView (event delegation), so the
+      // button carries no inline `onclick` and works under a strict CSP.
+      node.children.push({
         type: 'element',
         tagName: 'button',
         properties: {
           class: 'copy-btn',
+          type: 'button',
+          'data-copy-code': '',
           'aria-label': '复制代码',
-          onclick: `(() => { const c = this.parentElement.querySelector('code'); if (!c) return; const t = Array.from(c.querySelectorAll('.line')).map(l => l.textContent || '').join('\\n').replace(/\\n$/, ''); navigator.clipboard.writeText(t).then(() => { this.textContent = '✓'; this.classList.add('copied'); setTimeout(() => { this.textContent = '⧉'; this.classList.remove('copied'); }, 1500); }); })()`,
-        } as any,
+        },
         children: [{ type: 'text', value: '⧉' }],
-      }
-      preEl.children.push(copyBtn)
+      })
     },
   }
 }
 
-export async function renderMarkdown(content: string, isDark: boolean): Promise<string> {
-  const html = marked.parse(content) as string
+interface CodeBlockMatch {
+  start: number
+  end: number
+  lang: string
+  info: string
+  code: string
+}
 
-  const { codeToHtml, bundledLanguages } = await import('shiki')
-  const regex = /<pre><code class="language-(\w+) shiki-code" data-info="([^"]*)">([\s\S]*?)<\/code><\/pre>/g
-
-  let result = html
+function findCodeBlocks(html: string): CodeBlockMatch[] {
+  const blocks: CodeBlockMatch[] = []
+  const regex = new RegExp(CODE_BLOCK_SOURCE, 'g')
   let match: RegExpExecArray | null
 
-  // 收集所有 code block 的 meta
-  const allMatches: { full: string; lang: string; rawInfo: string; code: string; meta: ReturnType<typeof parseCodeMeta> }[] = []
   while ((match = regex.exec(html)) !== null) {
-    const [full, lang, encodedInfo, code] = match
-    const rawInfo = decodeAttr(encodedInfo)
-    allMatches.push({ full, lang, rawInfo, code, meta: parseCodeMeta(rawInfo) })
+    blocks.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      lang: match[1],
+      info: decodeAttr(match[2]),
+      code: match[3],
+    })
   }
 
-  // 按顺序处理，每次重置索引
-  currentMetaList = allMatches.map((m) => m.meta)
-  currentMetaIndex = 0
+  return blocks
+}
 
-  for (const m of allMatches) {
-    const langForShiki = (m.lang && m.lang in bundledLanguages) ? m.lang : 'text'
-    try {
-      const highlighted = await codeToHtml(decodeEntities(m.code), {
-        lang: langForShiki,
-        theme: isDark ? 'github-dark' : 'github-light',
-        transformers: [createDiffTransformer()],
-      })
-      result = result.replace(m.full, highlighted)
-    } catch {
-      // 保留原始代码块
+/**
+ * Render Markdown to HTML with syntax highlighting.
+ *
+ * Both themes are emitted at once as CSS custom properties (`--shiki-light` /
+ * `--shiki-dark`), so toggling the site theme only flips CSS — the article no
+ * longer has to be re-rendered, and there is no flash of the wrong theme.
+ */
+export async function renderMarkdown(content: string): Promise<RenderedMarkdown> {
+  const headings: TocHeading[] = []
+  const blog = createBlogRenderer(headings)
+  const marked = new Marked({ renderer: blog.renderer })
+
+  const html = marked.parse(content) as string
+  const blocks = findCodeBlocks(html)
+
+  // Nothing to highlight: skip loading Shiki entirely.
+  if (blocks.length === 0) {
+    return { html, headings }
+  }
+
+  const highlighter = await getHighlighter()
+  const loadedLanguages = new Set<string>(highlighter.getLoadedLanguages())
+  const codeMetas = blog.getCodeMetas()
+
+  // Rebuild the document by exact offset instead of `String.replace`, which
+  // always replaces the first occurrence and therefore highlighted the same
+  // block twice when two blocks were byte-identical.
+  const parts: string[] = []
+  let cursor = 0
+
+  for (let index = 0; index < blocks.length; index++) {
+    const block = blocks[index]
+    const meta = codeMetas[index] ?? {
+      lang: block.lang,
+      title: null,
+      del: [],
+      ins: [],
     }
+
+    parts.push(html.slice(cursor, block.start))
+
+    const lang = loadedLanguages.has(meta.lang) ? meta.lang : 'text'
+    try {
+      parts.push(
+        highlighter.codeToHtml(decodeEntities(block.code), {
+          lang,
+          themes: { light: 'github-light', dark: 'github-dark' },
+          defaultColor: false,
+          transformers: [codeMetaTransformer(meta)],
+        }),
+      )
+    } catch {
+      // Keep the unhighlighted block rather than dropping the post body.
+      parts.push(
+        `<pre><code class="language-${escapeHtml(meta.lang)}">${block.code}</code></pre>`,
+      )
+    }
+
+    cursor = block.end
   }
 
-  currentMetaList = []
-  currentMetaIndex = 0
-  return result
-}
+  parts.push(html.slice(cursor))
 
-function decodeEntities(str: string): string {
-  return str
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-}
-
-function decodeAttr(str: string): string {
-  return str
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
+  return { html: parts.join(''), headings }
 }

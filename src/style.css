@@ -1,5 +1,9 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Self-hosted Geist (shadcn-vue `geist-sans` preset font).
+   Self-hosting avoids a render-blocking third-party request and gives the
+   `'Geist Variable'` family that `--font-sans` below actually references; the
+   previous Google Fonts import only defined `Geist`, so the preset's font stack
+   silently fell back to `sans-serif`. */
+@import "@fontsource-variable/geist";
 
 @import "tailwindcss";
 
@@ -23,30 +27,42 @@
   ol { @apply list-decimal; }
   li { @apply my-1; }
   blockquote {
-    @apply border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground my-4 bg-muted/30 py-2 pr-2 rounded-none;
+    @apply border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground my-4 bg-muted/30 py-2 pr-2 rounded-md;
   }
   hr { @apply my-8 border-border; }
-  img { @apply max-w-full rounded-none my-4 cursor-zoom-in; }
+  img { @apply max-w-full rounded-md my-4 cursor-zoom-in; }
   table {
     @apply w-full border-collapse my-4;
     th, td { @apply border border-border px-4 py-2; }
     th { @apply bg-muted font-semibold; }
   }
   pre {
-    @apply my-4 overflow-x-auto rounded-none p-4 bg-[#f6f8fa] text-sm border border-border;
+    @apply my-4 overflow-x-auto rounded-md p-4 text-sm border border-border;
   }
   code {
-    @apply rounded-none bg-muted px-1.5 py-0.5 text-sm font-mono;
+    @apply rounded-sm bg-muted px-1.5 py-0.5 text-sm font-mono;
   }
   pre code {
     @apply bg-transparent p-0 block;
   }
 }
 
-.dark .prose {
-  pre {
-    @apply bg-[#161b22];
-  }
+/* Shiki dual themes.
+   `defaultColor: false` makes Shiki emit both palettes as custom properties, so
+   switching the site theme is pure CSS and the article never re-renders. */
+.prose pre.shiki {
+  background-color: var(--shiki-light-bg);
+}
+.prose pre.shiki code,
+.prose pre.shiki span {
+  color: var(--shiki-light);
+}
+.dark .prose pre.shiki {
+  background-color: var(--shiki-dark-bg);
+}
+.dark .prose pre.shiki code,
+.dark .prose pre.shiki span {
+  color: var(--shiki-dark);
 }
 
 /* Shiki code block: title bar */
@@ -102,15 +118,19 @@
   position: relative;
 }
 .prose pre .copy-btn {
-  @apply absolute top-2 right-2 z-10 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-none text-sm font-medium transition-colors cursor-pointer border border-border bg-background text-muted-foreground;
-  height: 32px;
-  width: 32px;
+  @apply absolute top-2 right-2 z-10 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium transition-colors cursor-pointer border border-border bg-background text-muted-foreground size-8;
   padding: 0;
   opacity: 0;
 }
 .prose pre:hover .copy-btn,
 .prose pre .copy-btn:focus-visible {
   opacity: 1;
+}
+/* Touch devices have no hover state, so the button has to be visible by default. */
+@media (hover: none) {
+  .prose pre .copy-btn {
+    opacity: 0.7;
+  }
 }
 .prose pre .copy-btn:hover {
   @apply bg-accent text-accent-foreground;
@@ -120,9 +140,10 @@
 }
 .prose pre .copy-btn.copied {
   @apply text-green-600 border-green-600;
+  opacity: 1;
 }
 
-/* Scrollbar: square corner style */
+/* Scrollbar */
 .prose pre::-webkit-scrollbar {
   @apply h-2;
 }
@@ -130,7 +151,7 @@
   @apply bg-transparent;
 }
 .prose pre::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-none;
+  @apply bg-border rounded-full;
 }
 .prose pre::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/40;
@@ -141,6 +162,11 @@
 }
 .dark .prose pre code .line.diff.del {
   @apply bg-red-400/20;
+}
+
+/* Fallback for a code block Shiki could not highlight (unknown language). */
+.prose pre:not(.shiki) {
+  @apply bg-muted;
 }
 
 @theme inline {
@@ -180,11 +206,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Geist Variable', sans-serif;
 }
 
 :root {
-  --radius: 0;
+  --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

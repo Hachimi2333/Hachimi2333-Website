@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { HTMLAttributes } from 'vue'
 
-import { PhDotsThree } from '@phosphor-icons/vue'
+import { MoreHorizontalIcon } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
@@ -17,7 +17,7 @@ const props = defineProps<{
     :class="cn('size-5 [&>svg]:size-4 flex items-center justify-center', props.class)"
   >
     <slot>
-      <PhDotsThree />
+      <MoreHorizontalIcon />
     </slot>
     <span class="sr-only">More</span>
   </span>

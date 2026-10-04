@@ -2,30 +2,44 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWindowScroll } from '@vueuse/core'
+import { ArrowLeft, Calendar, Clock, FolderOpen, Tag } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
-import { Calendar, Tag, FolderOpen, ArrowLeft, Clock } from 'lucide-vue-next'
-import { getPostBySlug } from '@/lib/blog'
-import { renderMarkdown } from '@/lib/markdown'
-import { formatDate } from '@/lib/date'
-import ImageLightbox from '@/components/ui/ImageLightbox.vue'
 import { Skeleton } from '@/components/ui/skeleton'
+import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import ArticleToc from '@/components/blog/ArticleToc.vue'
-import { getHeadingList, resetHeadings } from 'marked-gfm-heading-id'
+import ImageLightbox from '@/components/ui/ImageLightbox.vue'
+import { getPostBySlug } from '@/lib/blog'
+import { renderMarkdown, type TocHeading } from '@/lib/markdown'
+import { formatDate } from '@/lib/date'
 import type { BlogPost } from '@/types/blog'
 
 const route = useRoute()
 const router = useRouter()
 const { y: scrollY } = useWindowScroll()
-const scrolled = computed(() => scrollY.value > 300)
-const post = ref<BlogPost | undefined>()
+
+const post = ref<BlogPost>()
 const renderedContent = ref('')
 const readingTime = ref('')
-const tocHeadings = ref<{ level: number; id: string; text: string }[]>([])
+const tocHeadings = ref<TocHeading[]>([])
 const loading = ref(true)
+
+const scrolled = computed(() => scrollY.value > 300)
 const hasToc = computed(() => tocHeadings.value.length > 0)
 const backAtRight = computed(() => !hasToc.value && !scrolled.value)
+
+/**
+ * Guards against out-of-order renders.
+ *
+ * `renderMarkdown` is async, so navigating quickly between two posts can let an
+ * older render resolve after a newer one and overwrite it with the wrong body.
+ * Only the most recently started render is allowed to commit.
+ */
+let renderToken = 0
+
+const lightboxVisible = ref(false)
+const lightboxSrc = ref('')
+const lightboxAlt = ref('')
 
 function goBack() {
   if (window.history.length > 1) {
@@ -35,13 +49,9 @@ function goBack() {
   }
 }
 
-const lightboxVisible = ref(false)
-const lightboxSrc = ref('')
-const lightboxAlt = ref('')
-
 function openLightbox(src: string, alt?: string) {
   lightboxSrc.value = src
-  lightboxAlt.value = alt || ''
+  lightboxAlt.value = alt ?? ''
   lightboxVisible.value = true
 }
 
@@ -49,45 +59,94 @@ function closeLightbox() {
   lightboxVisible.value = false
 }
 
-function handleArticleClick(e: MouseEvent) {
-  const target = e.target as HTMLElement
-  const img = target.closest('img')
-  if (img && img.closest('.prose')) {
-    openLightbox(img.src, img.alt || undefined)
+/**
+ * Read the plain text of a highlighted block.
+ *
+ * Shiki wraps every source line in a `.line` span; plain (unhighlighted) blocks
+ * have none, so fall back to the code element's text content.
+ */
+function readCodeText(button: HTMLButtonElement): string {
+  const code = button.closest('pre')?.querySelector('code')
+  if (!code) return ''
+
+  const lines = code.querySelectorAll('.line')
+  if (lines.length === 0) return (code.textContent ?? '').trimEnd()
+
+  return Array.from(lines)
+    .map((line) => line.textContent ?? '')
+    .join('\n')
+    .replace(/\n$/, '')
+}
+
+async function copyCode(button: HTMLButtonElement) {
+  const text = readCodeText(button)
+  if (!text) return
+
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    // Clipboard blocked (insecure context or denied permission): stay silent.
+    return
+  }
+
+  button.textContent = '✓'
+  button.classList.add('copied')
+  window.setTimeout(() => {
+    button.textContent = '⧉'
+    button.classList.remove('copied')
+  }, 1500)
+}
+
+/** Delegated click handler for everything inside the rendered article. */
+function handleArticleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+
+  const copyButton = target.closest<HTMLButtonElement>('[data-copy-code]')
+  if (copyButton) {
+    void copyCode(copyButton)
+    return
+  }
+
+  const image = target.closest('img')
+  if (image?.closest('.prose')) {
+    openLightbox(image.src, image.alt || undefined)
   }
 }
 
 function updateReadingTime(content: string) {
-  const charCount = content.length
-  const minutes = Math.max(1, Math.ceil(charCount / 400))
-  readingTime.value = `${minutes} 分钟`
+  readingTime.value = `${Math.max(1, Math.ceil(content.length / 400))} 分钟`
 }
 
 async function loadPost() {
+  const token = ++renderToken
   loading.value = true
+
   const slug = route.params.slug as string
-  post.value = getPostBySlug(slug)
-  if (post.value) {
-    document.title = `${post.value.title} - Hachimi2333`
-    resetHeadings()
-    const isDark = document.documentElement.classList.contains('dark')
-    renderedContent.value = await renderMarkdown(post.value.content, isDark)
-    tocHeadings.value = getHeadingList().filter((h) => h.level >= 2)
-    updateReadingTime(post.value.content)
-  } else {
+  const found = getPostBySlug(slug)
+  post.value = found
+  tocHeadings.value = []
+
+  if (!found) {
     document.title = '文章未找到 - Hachimi2333'
-    tocHeadings.value = []
+    loading.value = false
+    return
   }
+
+  document.title = `${found.title} - Hachimi2333`
+  updateReadingTime(found.content)
+
+  const rendered = await renderMarkdown(found.content)
+  // A newer navigation started while this render was in flight: discard it.
+  if (token !== renderToken) return
+
+  renderedContent.value = rendered.html
+  tocHeadings.value = rendered.headings.filter((heading) => heading.level >= 2)
   loading.value = false
 }
 
-onMounted(() => {
-  loadPost()
-})
+onMounted(loadPost)
 
-watch(() => route.params.slug, () => {
-  loadPost()
-})
+watch(() => route.params.slug, loadPost)
 </script>
 
 <template>
@@ -97,7 +156,7 @@ watch(() => route.params.slug, () => {
       <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: '加载中...' }]" />
 
       <header class="mb-6">
-        <Skeleton class="h-9 w-3/4 mb-4" />
+        <Skeleton class="mb-4 h-9 w-3/4" />
         <div class="flex flex-wrap items-center gap-4">
           <Skeleton class="h-4 w-24" />
           <Skeleton class="h-4 w-20" />
@@ -106,8 +165,8 @@ watch(() => route.params.slug, () => {
       </header>
 
       <div class="flex gap-6">
-        <Card class="flex-1 min-w-0 max-w-xl py-0">
-          <div class="p-5 space-y-4">
+        <Card class="min-w-0 flex-1 py-0">
+          <div class="flex flex-col gap-4 p-5">
             <Skeleton class="h-64 w-full" />
             <Skeleton class="h-4 w-full" />
             <Skeleton class="h-4 w-5/6" />
@@ -117,12 +176,12 @@ watch(() => route.params.slug, () => {
           </div>
         </Card>
 
-        <div class="hidden lg:block w-56 shrink-0 space-y-4 sticky top-20 self-start">
+        <div class="hidden w-56 shrink-0 flex-col gap-4 self-start lg:flex">
           <Card>
             <Skeleton class="h-10 w-full" />
           </Card>
           <Card>
-            <div class="p-4 space-y-3">
+            <div class="flex flex-col gap-3 p-4">
               <Skeleton class="h-4 w-20" />
               <Skeleton class="h-3 w-full" />
               <Skeleton class="h-3 w-5/6" />
@@ -136,55 +195,55 @@ watch(() => route.params.slug, () => {
 
     <!-- Loaded: post found -->
     <template v-else-if="post">
-      <!-- Breadcrumb -->
       <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: post.title }]" />
 
-      <!-- Post Header -->
+      <!-- Post header -->
       <header class="mb-6">
-        <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">{{ post.title }}</h1>
+        <h1 class="mb-4 text-3xl font-bold tracking-tight md:text-4xl">{{ post.title }}</h1>
         <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <div class="flex items-center gap-1.5">
-            <Calendar class="h-4 w-4" />
+            <Calendar class="size-4" />
             <span>{{ formatDate(post.published) }}</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <Clock class="h-4 w-4" />
+            <Clock class="size-4" />
             <span>{{ readingTime }}</span>
           </div>
           <div v-if="post.category" class="flex items-center gap-1.5">
-            <FolderOpen class="h-4 w-4" />
+            <FolderOpen class="size-4" />
             <span>{{ post.category }}</span>
           </div>
           <div v-if="post.tags.length" class="flex items-center gap-1.5">
-            <Tag class="h-4 w-4" />
+            <Tag class="size-4" />
             <span>{{ post.tags.join(' / ') }}</span>
           </div>
         </div>
       </header>
 
-      <!-- Post Content -->
+      <!-- Post content -->
       <div class="flex gap-6">
-        <Card class="flex-1 min-w-0 max-w-xl py-0">
+        <Card class="min-w-0 flex-1 py-0">
           <div class="p-5">
-            <!-- Cover Image -->
-            <div v-if="post.image" class="mb-8 overflow-hidden">
+            <div v-if="post.image" class="mb-8 overflow-hidden rounded-md">
               <img
                 :src="post.image"
                 :alt="post.title"
-                class="w-full max-h-96 object-cover"
+                class="max-h-96 w-full object-cover"
                 loading="lazy"
+                decoding="async"
               />
             </div>
 
+            <!-- eslint-disable-next-line vue/no-v-html -- trusted local Markdown -->
             <article class="prose max-w-none scroll-mt-20" v-html="renderedContent" @click="handleArticleClick" />
           </div>
         </Card>
 
-        <!-- Desktop sidebar: Back button + TOC -->
-        <div class="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 lg:space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <!-- Desktop sidebar: back button + TOC -->
+        <div class="hidden w-56 shrink-0 flex-col gap-4 self-start lg:sticky lg:top-20 lg:flex">
           <Card>
-            <Button variant="ghost" class="w-full justify-start cursor-default" @click="goBack">
-              <ArrowLeft class="mr-2 h-4 w-4" />
+            <Button variant="ghost" class="w-full justify-start" @click="goBack">
+              <ArrowLeft data-icon="inline-start" />
               返回文章列表
             </Button>
           </Card>
@@ -192,26 +251,24 @@ watch(() => route.params.slug, () => {
         </div>
       </div>
 
-      <!-- Mobile floating buttons (Back + TOC) -->
-      <Transition name="toc-btn">
-        <button
-          class="fixed z-[100] flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-all duration-200 lg:hidden bottom-8"
-          :class="backAtRight ? 'right-4 sm:right-8' : 'right-16 sm:right-20'"
-          aria-label="返回文章列表"
-          @click="goBack"
-        >
-          <ArrowLeft class="w-5 h-5 text-foreground" />
-        </button>
-      </Transition>
+      <!-- Mobile floating back button -->
+      <button
+        class="fixed bottom-8 z-100 flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-all duration-200 hover:bg-accent lg:hidden"
+        :class="backAtRight ? 'right-4 sm:right-8' : 'right-16 sm:right-20'"
+        aria-label="返回文章列表"
+        @click="goBack"
+      >
+        <ArrowLeft class="size-5 text-foreground" />
+      </button>
     </template>
 
     <!-- Not found -->
     <template v-else>
-      <div class="text-center py-24">
-        <h1 class="text-2xl font-bold mb-2">文章未找到</h1>
-        <p class="text-muted-foreground mb-6">你访问的文章不存在</p>
+      <div class="py-24 text-center">
+        <h1 class="mb-2 text-2xl font-bold">文章未找到</h1>
+        <p class="mb-6 text-muted-foreground">你访问的文章不存在</p>
         <Button @click="goBack">
-          <ArrowLeft class="mr-2 h-4 w-4" />
+          <ArrowLeft data-icon="inline-start" />
           返回博客
         </Button>
       </div>

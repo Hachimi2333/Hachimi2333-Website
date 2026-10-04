@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { cn } from '@/lib/utils'
 import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
-import { Search, Download, RotateCcw, Palette, Maximize2, Loader2 } from 'lucide-vue-next'
+import { Search, Download, RotateCcw, Palette, Maximize2, Loader2 } from '@lucide/vue'
 import ToolLayout from '@/tools/components/ToolLayout.vue'
 import { getToolById } from '@/tools/manifest'
 
@@ -135,11 +135,11 @@ onMounted(() => {
 
 <template>
   <ToolLayout :title="tool.name" :version="tool.version">
-    <div class="space-y-6">
+    <div class="flex flex-col gap-6">
       <!-- Preview -->
       <Card class="py-0">
         <div class="flex items-center justify-center bg-muted border-b p-6">
-          <div class="aspect-square w-full max-w-[320px] bg-white rounded-none overflow-hidden border shadow-sm">
+          <div class="aspect-square w-full max-w-[320px] overflow-hidden rounded-lg border bg-white shadow-sm">
             <canvas
               ref="canvasRef"
               width="1024"
@@ -173,10 +173,10 @@ onMounted(() => {
             </CardTitle>
             <CardDescription>搜索 Iconify 图标库</CardDescription>
           </CardHeader>
-          <CardContent class="space-y-4">
+          <CardContent class="flex flex-col gap-4">
             <div
               v-if="currentIcon"
-              class="flex items-center gap-2 text-sm bg-muted/40 rounded-none px-3 py-2"
+              class="flex items-center gap-2 text-sm bg-muted/40 rounded-md px-3 py-2"
             >
               <Loader2 v-if="iconLoading" class="size-3.5 animate-spin text-muted-foreground shrink-0" />
               <span class="text-muted-foreground shrink-0">当前:</span>
@@ -215,13 +215,13 @@ onMounted(() => {
 
             <div
               v-if="searchResults.length > 0"
-              class="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto p-1.5 bg-muted/30 rounded-none"
+              class="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto p-1.5 bg-muted/30 rounded-md"
             >
               <button
                 v-for="iconName in searchResults"
                 :key="iconName"
                 :class="cn(
-                  'aspect-square flex items-center justify-center rounded-none border p-0.5 transition-all',
+                  'aspect-square flex items-center justify-center rounded-sm border p-0.5 transition-all',
                   currentIcon === iconName
                     ? 'border-primary bg-primary/10 ring-1 ring-primary'
                     : 'border-transparent hover:border-border hover:bg-accent'
@@ -247,9 +247,9 @@ onMounted(() => {
             </CardTitle>
             <CardDescription>调整图标大小与颜色</CardDescription>
           </CardHeader>
-          <CardContent class="space-y-5">
+          <CardContent class="flex flex-col gap-5">
             <!-- Icon Scale -->
-            <div class="space-y-3">
+            <div class="flex flex-col gap-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm">图标大小</span>
                 <span class="text-sm tabular-nums text-muted-foreground">{{ Math.round(iconScale * 100) }}%</span>
@@ -268,7 +268,7 @@ onMounted(() => {
             </div>
 
             <!-- Icon Color -->
-            <div class="space-y-2">
+            <div class="flex flex-col gap-2">
               <div class="flex items-center justify-between">
                 <span class="text-sm flex items-center gap-1.5">
                   <Palette class="h-3.5 w-3.5 text-muted-foreground" />
@@ -282,10 +282,10 @@ onMounted(() => {
             </div>
 
             <!-- Background Color -->
-            <div class="space-y-2">
+            <div class="flex flex-col gap-2">
               <div class="flex items-center justify-between">
                 <span class="text-sm flex items-center gap-1.5">
-                  <span class="w-3.5 h-3.5 rounded-none border border-input shrink-0" :style="{ background: bgColor }" />
+                  <span class="size-3.5 rounded-sm border border-input shrink-0" :style="{ background: bgColor }" />
                   背景颜色
                 </span>
                 <ColorPicker

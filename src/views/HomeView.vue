@@ -1,42 +1,44 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { Github, BookOpen, Wrench, ArrowRight } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { BookOpen, Wrench, ArrowRight } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import GithubMark from '@/components/icons/GithubMark.vue'
 
 const router = useRouter()
 </script>
 
 <template>
-  <div class="flex items-center justify-center h-full">
-    <div class="text-center space-y-8">
+  <div class="flex h-full items-center justify-center">
+    <div class="flex flex-col items-center gap-8 text-center">
       <!-- Avatar -->
-      <div class="flex justify-center">
-        <div class="relative">
-          <img
-            src="/avatar.webp"
-            alt="Hachimi2333"
-            class="w-32 h-32 rounded-none object-cover shadow-lg"
-          />
-          <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-none border-4 border-background"></div>
-        </div>
+      <div class="relative">
+        <img
+          src="/avatar.webp"
+          alt="Hachimi2333"
+          class="size-32 rounded-2xl object-cover shadow-lg"
+        />
+        <div class="absolute -right-1 -bottom-1 size-8 rounded-full border-4 border-background bg-green-500" />
       </div>
 
       <!-- One-liner -->
-      <div class="space-y-2">
-        <h1 class="text-3xl md:text-4xl font-bold tracking-tight">
+      <div class="flex flex-col gap-2">
+        <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
           Hachimi2333
         </h1>
-        <p class="text-lg text-muted-foreground max-w-md mx-auto">
+        <p class="max-w-md text-lg text-muted-foreground">
           青空一直線、目指せ一着！
         </p>
       </div>
 
       <!-- Buttons -->
       <div class="flex flex-wrap justify-center gap-3">
-        <Button @click="router.push('/posts')" class="group">
+        <Button class="group" @click="router.push('/posts')">
           <BookOpen data-icon="inline-start" />
           博客
-          <ArrowRight data-icon="inline-end" class="transition-transform group-hover:translate-x-1" />
+          <ArrowRight
+            data-icon="inline-end"
+            class="transition-transform group-hover:translate-x-1"
+          />
         </Button>
         <Button variant="outline" @click="router.push('/tools')">
           <Wrench data-icon="inline-start" />
@@ -44,7 +46,7 @@ const router = useRouter()
         </Button>
         <Button variant="outline" as-child>
           <a href="https://github.com/hachimi2333" target="_blank" rel="noopener noreferrer">
-            <Github data-icon="inline-start" />
+            <GithubMark data-icon="inline-start" />
             GitHub
           </a>
         </Button>

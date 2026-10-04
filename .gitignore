@@ -17,6 +17,10 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -27,5 +31,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agent tooling (skills are installed locally, not committed)
 .agents/
 .mimocode/

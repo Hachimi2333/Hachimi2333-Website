@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
-import { ChevronUp } from 'lucide-vue-next'
+import { ChevronUpIcon } from '@lucide/vue'
 
 const { y } = useWindowScroll()
 const show = ref(false)
 
-watch(y, (val) => {
-  show.value = val > 300
+watch(y, (value) => {
+  show.value = value > 300
 })
 
 function scrollToTop() {
@@ -19,11 +19,12 @@ function scrollToTop() {
   <Transition name="back-to-top">
     <button
       v-show="show"
-      class="fixed bottom-8 right-4 sm:right-8 z-[100] flex items-center justify-center w-10 h-10 rounded-none bg-background border border-border shadow-sm hover:bg-accent transition-colors"
-      @click="scrollToTop"
+      type="button"
+      class="fixed right-4 bottom-8 z-100 flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-colors hover:bg-accent sm:right-8"
       aria-label="回到顶部"
+      @click="scrollToTop"
     >
-      <ChevronUp class="w-5 h-5 text-foreground" />
+      <ChevronUpIcon class="size-5 text-foreground" />
     </button>
   </Transition>
 </template>

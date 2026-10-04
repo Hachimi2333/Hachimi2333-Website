@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { cn } from '@/lib/utils'
 import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
-import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown, Loader2 } from 'lucide-vue-next'
+import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown, Loader2 } from '@lucide/vue'
 import ToolLayout from '@/tools/components/ToolLayout.vue'
 import { getToolById } from '@/tools/manifest'
 
@@ -289,7 +289,7 @@ onMounted(() => {
 
 <template>
   <ToolLayout :title="tool.name" :version="tool.version">
-    <div class="space-y-6">
+    <div class="flex flex-col gap-6">
       <!-- Preview -->
       <Card class="py-0">
         <div class="aspect-[1920/600] w-full bg-white border-b">
@@ -304,16 +304,16 @@ onMounted(() => {
           <span class="tabular-nums shrink-0">1920 × 600 px</span>
           <div class="flex items-center gap-2">
             <div class="relative inline-flex -space-x-px">
-              <Button size="sm" variant="outline" class="rounded-none" @click="exportCanvas(exportFormat)">
+              <Button size="sm" variant="outline" @click="exportCanvas(exportFormat)">
                 <Download data-icon="inline-start" />
                 下载 {{ exportFormat.toUpperCase() }}
               </Button>
-              <Button size="sm" variant="outline" class="rounded-none px-2" @click="toggleFormatMenu">
+              <Button size="sm" variant="outline" class="px-2" @click="toggleFormatMenu">
                 <ChevronDown />
               </Button>
               <div
                 v-if="showFormatMenu"
-                class="absolute right-0 top-full mt-1 bg-popover border rounded-none shadow-md z-10 py-1 min-w-[100px]"
+                class="absolute right-0 top-full mt-1 bg-popover border rounded-md shadow-md z-10 py-1 min-w-[100px]"
                 @click.stop
               >
                 <button
@@ -346,10 +346,10 @@ onMounted(() => {
             </CardTitle>
             <CardDescription>搜索 Iconify 图标或上传本地图片</CardDescription>
           </CardHeader>
-          <CardContent class="space-y-4">
+          <CardContent class="flex flex-col gap-4">
             <div
               v-if="currentIconName || uploadedImageData"
-              class="flex items-center gap-2 text-sm bg-muted/40 rounded-none px-3 py-2"
+              class="flex items-center gap-2 text-sm bg-muted/40 rounded-md px-3 py-2"
             >
               <Loader2 v-if="iconLoading" class="size-3.5 animate-spin text-muted-foreground shrink-0" />
               <span class="text-muted-foreground shrink-0">当前:</span>
@@ -390,13 +390,13 @@ onMounted(() => {
 
             <div
               v-if="searchResults.length > 0"
-              class="grid grid-cols-8 gap-1 max-h-40 overflow-y-auto p-1.5 bg-muted/30 rounded-none"
+              class="grid grid-cols-8 gap-1 max-h-40 overflow-y-auto p-1.5 bg-muted/30 rounded-md"
             >
               <button
                 v-for="iconName in searchResults"
                 :key="iconName"
                 :class="cn(
-                  'aspect-square flex items-center justify-center rounded-none border p-0.5 transition-all',
+                  'aspect-square flex items-center justify-center rounded-sm border p-0.5 transition-all',
                   currentIconName === iconName && !isUsingUploadedImage
                     ? 'border-primary bg-primary/10 ring-1 ring-primary'
                     : 'border-transparent hover:border-border hover:bg-accent'
@@ -414,7 +414,7 @@ onMounted(() => {
             <div class="border-t pt-4">
               <div
                 v-if="!isUsingUploadedImage"
-                class="border-2 border-dashed border-border rounded-none p-3 text-center cursor-pointer transition-colors hover:border-primary hover:bg-accent/50"
+                class="border-2 border-dashed border-border rounded-md p-3 text-center cursor-pointer transition-colors hover:border-primary hover:bg-accent/50"
                 @click="($refs.fileInput as HTMLInputElement)?.click()"
                 @dragover.prevent
                 @drop="onFileDrop"
@@ -433,7 +433,7 @@ onMounted(() => {
               </div>
               <div
                 v-else
-                class="flex items-center justify-between bg-primary/10 rounded-none px-3 py-2"
+                class="flex items-center justify-between bg-primary/10 rounded-md px-3 py-2"
               >
                 <span class="text-sm truncate">{{ uploadedFileName }}</span>
                 <Button variant="ghost" size="icon-sm" @click="clearUploadedImage">
@@ -453,9 +453,9 @@ onMounted(() => {
             </CardTitle>
             <CardDescription>调整图标大小、颜色与导出选项</CardDescription>
           </CardHeader>
-          <CardContent class="space-y-5">
+          <CardContent class="flex flex-col gap-5">
             <!-- Icon Size -->
-            <div class="space-y-3">
+            <div class="flex flex-col gap-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm">图标大小</span>
                 <span class="text-sm tabular-nums text-muted-foreground">{{ iconSize }}px</span>
@@ -474,7 +474,7 @@ onMounted(() => {
             </div>
 
             <!-- Color Mode -->
-            <div v-if="!isUsingUploadedImage" class="space-y-3">
+            <div v-if="!isUsingUploadedImage" class="flex flex-col gap-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm flex items-center gap-1.5">
                   <Palette class="h-3.5 w-3.5 text-muted-foreground" />
@@ -511,7 +511,7 @@ onMounted(() => {
             </div>
 
             <!-- Filename -->
-            <div class="space-y-2">
+            <div class="flex flex-col gap-2">
               <span class="text-sm">导出文件名</span>
               <InputGroup>
                 <InputGroupInput

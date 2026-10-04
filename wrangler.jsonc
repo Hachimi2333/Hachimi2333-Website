@@ -1,0 +1,21 @@
+{
+  // Cloudflare Workers with Static Assets — serves the Vite build output.
+  // Deploy:  npm run deploy
+  // Preview: npm run deploy:preview
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hachimi2333-website",
+  "compatibility_date": "2026-10-03",
+
+  "assets": {
+    // Vite writes index.html + hashed bundles here.
+    "directory": "./dist",
+    // No Worker script: this is an assets-only Worker. Any request that does not
+    // match a file is answered with /index.html at 200 OK, which is exactly what
+    // vue-router's history mode needs for deep links such as /posts/1.
+    "not_found_handling": "single-page-application"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

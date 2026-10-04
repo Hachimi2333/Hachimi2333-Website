@@ -6,6 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hachimi2333</title>
     <meta name="description" content="Hachimi2333 的个人网站 - 博客、工具和更多" />
+    <link rel="canonical" href="https://www.hachimi2333.top/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Hachimi2333" />
+    <meta property="og:title" content="Hachimi2333" />
+    <meta property="og:description" content="Hachimi2333 的个人网站 - 博客、工具和更多" />
+    <meta property="og:url" content="https://www.hachimi2333.top/" />
+    <meta name="twitter:card" content="summary" />
+
+    <script>
+      // Runs before the first paint so a dark-mode visitor never sees a light
+      // flash. Keep the logic in sync with src/composables/useTheme.ts.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('theme')
+          var dark = stored
+            ? stored === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+          document.documentElement.classList.toggle('dark', dark)
+        } catch (error) {
+          // Storage blocked: fall back to the stylesheet default.
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

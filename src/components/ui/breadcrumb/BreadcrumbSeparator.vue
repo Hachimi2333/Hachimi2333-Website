@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { HTMLAttributes } from 'vue'
 
-import { PhCaretRight } from '@phosphor-icons/vue'
+import { ChevronRightIcon } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
@@ -17,7 +17,7 @@ const props = defineProps<{
     :class="cn('[&>svg]:size-3.5', props.class)"
   >
     <slot>
-      <PhCaretRight class="cn-rtl-flip" />
+      <ChevronRightIcon class="cn-rtl-flip" />
     </slot>
   </li>
 </template>

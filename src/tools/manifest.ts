@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Image, AppWindow } from 'lucide-vue-next'
+import { Image, AppWindow } from '@lucide/vue'
 
 export interface ToolMeta {
   id: string
@@ -31,8 +31,4 @@ export const tools: ToolMeta[] = [
 
 export function getToolById(id: string): ToolMeta | undefined {
   return tools.find((t) => t.id === id)
-}
-
-export function getToolByRoute(route: string): ToolMeta | undefined {
-  return tools.find((t) => t.route === route)
 }

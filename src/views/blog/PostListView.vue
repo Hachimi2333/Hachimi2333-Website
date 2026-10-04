@@ -1,62 +1,96 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Card } from '@/components/ui/card'
+import {
+  ArchiveIcon,
+  CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  FileTextIcon,
+  FolderOpenIcon,
+  SearchIcon,
+  TagIcon,
+} from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
-import { InputGroup, InputGroupInput, InputGroupAddon } from '@/components/ui/input-group'
+import { Card } from '@/components/ui/card'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
-  PaginationPrevious,
   PaginationNext,
+  PaginationPrevious,
 } from '@/components/ui/pagination'
-import { Search, Calendar, FolderOpen, FileText, Archive, Tag, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
-import { getAllPosts, searchPosts, getArchivesByYear } from '@/lib/blog'
+import { getAllPosts, getArchivesByYear, searchPosts } from '@/lib/blog'
+import { POSTS_ROUTE } from '@/lib/blog-paths'
 import { formatDate, formatMonthDay } from '@/lib/date'
 
 const route = useRoute()
 const router = useRouter()
+
+const PAGE_SIZE = 5
+
 const activeTab = ref('articles')
 const searchQuery = ref('')
 
 const allPosts = getAllPosts()
-const pageSize = 5
-const currentPage = ref(Number(route.query.page) || 1)
+const filteredPosts = computed(() =>
+  searchQuery.value ? searchPosts(searchQuery.value) : allPosts,
+)
 
-const filteredPosts = computed(() => {
-  if (searchQuery.value) {
-    return searchPosts(searchQuery.value)
-  }
-  return allPosts
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredPosts.value.length / PAGE_SIZE)),
+)
+
+/**
+ * Current page, derived from the URL.
+ *
+ * Reading from the route (instead of a local ref seeded once) is what makes the
+ * browser back/forward buttons move between pages correctly, and clamping to
+ * `totalPages` stops a hand-edited `?page=99` from rendering an empty list.
+ */
+const currentPage = computed({
+  get() {
+    const requested = Number(route.query.page)
+    const page = Number.isInteger(requested) && requested > 0 ? requested : 1
+    return Math.min(page, totalPages.value)
+  },
+  set(page: number) {
+    void router.push({
+      query: { ...route.query, page: page > 1 ? String(page) : undefined },
+    })
+  },
 })
 
 const paginatedPosts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredPosts.value.slice(start, start + pageSize)
-})
-
-watch(searchQuery, () => {
-  currentPage.value = 1
-})
-
-watch(currentPage, (page) => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-  router.replace({ query: { ...route.query, page: page > 1 ? String(page) : undefined } })
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return filteredPosts.value.slice(start, start + PAGE_SIZE)
 })
 
 const yearArchives = computed(() => getArchivesByYear())
 
+// A new search must start from page 1, otherwise the query string would keep a
+// stale page number that no longer exists in the result set.
+watch(searchQuery, () => {
+  if (route.query.page) {
+    void router.replace({ query: { ...route.query, page: undefined } })
+  }
+})
+
+function openPost(slug: string) {
+  void router.push(`${POSTS_ROUTE}/${slug}`)
+}
+
 function extractDescription(post: { description: string; content: string }): string {
   if (post.description) return post.description
-  const lines = post.content
+  const first = post.content
     .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith('#') && !l.startsWith('!') && !l.startsWith('---'))
-  const first = lines[0] || ''
-  return first.replace(/\*\*|__|\*|_|\[.*?\]\(.*?\)|`{1,3}/g, '').slice(0, 120)
+    .map((line) => line.trim())
+    .find((line) => line && !line.startsWith('#') && !line.startsWith('!') && !line.startsWith('---'))
+  return (first ?? '').replace(/\*\*|__|\*|_|\[.*?\]\(.*?\)|`{1,3}/g, '').slice(0, 120)
 }
 </script>
 
@@ -64,31 +98,29 @@ function extractDescription(post: { description: string; content: string }): str
   <div class="container mx-auto max-w-4xl px-4 py-8">
     <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客' }]" />
 
-    <!-- Header -->
     <div class="mb-6">
       <h1 class="text-3xl font-bold tracking-tight">博客</h1>
     </div>
 
-    <!-- Tabs + Search -->
     <Tabs v-model="activeTab" class="mb-6">
       <div class="flex items-center gap-2">
         <TabsList>
           <TabsTrigger value="articles">
-            <FileText data-icon="inline-start" />
+            <FileTextIcon data-icon="inline-start" />
             文章
           </TabsTrigger>
           <TabsTrigger value="archives">
-            <Archive data-icon="inline-start" />
+            <ArchiveIcon data-icon="inline-start" />
             归档
           </TabsTrigger>
         </TabsList>
 
         <Transition name="search-fade">
-          <div v-if="activeTab === 'articles'" class="flex-1 min-w-0">
+          <div v-if="activeTab === 'articles'" class="min-w-0 flex-1">
             <InputGroup class="h-8">
               <InputGroupInput v-model="searchQuery" placeholder="搜索文章..." />
               <InputGroupAddon>
-                <Search />
+                <SearchIcon />
               </InputGroupAddon>
             </InputGroup>
           </div>
@@ -98,122 +130,140 @@ function extractDescription(post: { description: string; content: string }): str
 
     <Transition name="tab-fade" mode="out-in">
       <!-- Articles -->
-      <div v-if="activeTab === 'articles'" key="articles" class="space-y-4">
-      <Card
-        v-for="post in paginatedPosts"
-        :key="post.slug"
-        class="cursor-pointer overflow-hidden py-0"
-        @click="router.push(`/posts/${post.slug}`)"
-      >
-        <div class="md:flex">
-          <div class="flex-1 flex flex-col p-5 min-w-0">
-            <h2 class="text-lg font-semibold leading-snug line-clamp-2 mb-2">
-              {{ post.title }}
-            </h2>
+      <div v-if="activeTab === 'articles'" key="articles" class="flex flex-col gap-4">
+        <Card
+          v-for="post in paginatedPosts"
+          :key="post.slug"
+          class="cursor-pointer overflow-hidden py-0 transition-colors hover:bg-accent/40"
+          @click="openPost(post.slug)"
+        >
+          <div class="md:flex">
+            <div class="flex min-w-0 flex-1 flex-col gap-2 p-5">
+              <h2 class="line-clamp-2 text-lg font-semibold leading-snug">
+                {{ post.title }}
+              </h2>
 
-            <div class="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-              <span class="inline-flex items-center gap-1">
-                <Calendar class="h-3.5 w-3.5 shrink-0" />
-                {{ formatDate(post.published) }}
-              </span>
-              <span v-if="post.category" class="inline-flex items-center gap-1">
-                <FolderOpen class="h-3.5 w-3.5 shrink-0" />
-                {{ post.category }}
-              </span>
+              <div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <span class="inline-flex items-center gap-1">
+                  <CalendarIcon class="size-3.5 shrink-0" />
+                  {{ formatDate(post.published) }}
+                </span>
+                <span v-if="post.category" class="inline-flex items-center gap-1">
+                  <FolderOpenIcon class="size-3.5 shrink-0" />
+                  {{ post.category }}
+                </span>
+              </div>
+
+              <div v-if="post.tags.length" class="flex flex-wrap items-center gap-1.5">
+                <Badge v-for="tag in post.tags" :key="tag" variant="secondary">
+                  <TagIcon class="size-3" />
+                  {{ tag }}
+                </Badge>
+              </div>
+
+              <p class="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                {{ extractDescription(post) }}
+              </p>
             </div>
 
-            <div v-if="post.tags.length" class="flex items-center gap-1.5 flex-wrap mt-2">
-              <Badge
-                v-for="tag in post.tags"
-                :key="tag"
-                variant="secondary"
+            <div v-if="post.image" class="shrink-0 overflow-hidden md:w-56">
+              <img
+                :src="post.image"
+                :alt="post.title"
+                class="h-48 w-full object-cover md:h-full"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </Card>
+
+        <div
+          v-if="filteredPosts.length === 0"
+          class="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground"
+        >
+          <FileTextIcon class="size-12 opacity-20" />
+          <p class="text-lg">没有找到相关文章</p>
+          <p class="text-sm">试试其他关键词</p>
+        </div>
+
+        <Pagination
+          v-if="filteredPosts.length > PAGE_SIZE"
+          v-model:page="currentPage"
+          :total="filteredPosts.length"
+          :items-per-page="PAGE_SIZE"
+          :sibling-count="1"
+          class="mt-2"
+        >
+          <PaginationContent v-slot="{ items }">
+            <PaginationPrevious>
+              <ChevronLeftIcon data-icon="inline-start" />
+              <span class="hidden sm:inline">上一页</span>
+            </PaginationPrevious>
+
+            <template v-for="(item, index) in items" :key="index">
+              <PaginationItem
+                v-if="item.type === 'page'"
+                :value="item.value"
+                :is-active="item.value === currentPage"
               >
-                <Tag class="h-3 w-3" />
-                {{ tag }}
-              </Badge>
-            </div>
+                {{ item.value }}
+              </PaginationItem>
+              <PaginationEllipsis v-else />
+            </template>
 
-            <p class="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
-              {{ extractDescription(post) }}
-            </p>
-          </div>
-
-          <div
-            v-if="post.image"
-            class="md:w-56 shrink-0 overflow-hidden"
-          >
-            <img
-              :src="post.image"
-              :alt="post.title"
-              class="w-full h-48 md:h-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </Card>
-
-      <div v-if="filteredPosts.length === 0" class="text-center py-16 text-muted-foreground">
-        <FileText class="h-12 w-12 mx-auto mb-4 opacity-20" />
-        <p class="text-lg">没有找到相关文章</p>
-        <p class="text-sm mt-1">试试其他关键词</p>
+            <PaginationNext>
+              <span class="hidden sm:inline">下一页</span>
+              <ChevronRightIcon data-icon="inline-end" />
+            </PaginationNext>
+          </PaginationContent>
+        </Pagination>
       </div>
 
-      <Pagination v-if="filteredPosts.length > pageSize" v-model:page="currentPage" :total="filteredPosts.length" :sibling-count="1" :items-per-page="pageSize" class="mt-6">
-        <PaginationContent v-slot="{ items }">
-          <PaginationPrevious>
-            <ChevronLeft />
-          </PaginationPrevious>
-          <template v-for="(item, index) in items" :key="index">
-            <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === currentPage" />
-          </template>
-          <PaginationNext>
-            <ChevronRight />
-          </PaginationNext>
-        </PaginationContent>
-      </Pagination>
-    </div>
+      <!-- Archives -->
+      <div v-else key="archives" class="flex flex-col gap-6">
+        <div v-for="group in yearArchives" :key="group.year" class="flex flex-col gap-3">
+          <div class="ml-[0.6875rem] flex items-center gap-3">
+            <div class="size-2.5 shrink-0 rounded-full bg-primary" />
+            <h3 class="text-lg font-semibold text-foreground">{{ group.label }}年</h3>
+            <Badge variant="outline">{{ group.posts.length }} 篇</Badge>
+          </div>
 
-    <!-- Archives -->
-    <div v-else key="archives" class="space-y-6">
-      <div v-for="group in yearArchives" :key="group.year">
-        <div class="flex items-center gap-3 mb-3 ml-[0.6875rem]">
-          <div class="w-2.5 h-2.5 rounded-none bg-primary shrink-0"></div>
-          <h3 class="text-lg font-semibold text-foreground">{{ group.label }}年</h3>
-          <Badge variant="outline">{{ group.posts.length }} 篇</Badge>
-        </div>
+          <div class="ml-3.5 flex flex-col gap-1 border-l-2 border-border pb-2 pl-5">
+            <div
+              v-for="post in group.posts"
+              :key="post.slug"
+              class="group relative flex cursor-pointer items-center gap-3 py-2"
+              @click="openPost(post.slug)"
+            >
+              <div
+                class="absolute top-1/2 -left-[1.45rem] size-1.5 -translate-y-1/2 rounded-full bg-border ring-2 ring-background group-hover:bg-primary"
+              />
 
-        <div class="space-y-1 ml-3.5 border-l-2 border-border pl-5 pb-2">
-          <div
-            v-for="post in group.posts"
-            :key="post.slug"
-            class="group relative flex items-center gap-3 py-2 cursor-pointer"
-            @click="router.push(`/posts/${post.slug}`)"
-          >
-            <div class="absolute -left-[1.45rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-none bg-border group-hover:bg-primary ring-2 ring-background"></div>
-
-            <span class="text-xs text-muted-foreground font-mono w-12 shrink-0">{{ formatMonthDay(post.published) }}</span>
-            <span class="text-sm font-medium text-foreground min-w-0 truncate">
-              {{ post.title }}
-            </span>
-            <div class="flex items-center gap-1 shrink-0 ml-auto">
-              <Badge
-                v-for="tag in post.tags"
-                :key="tag"
-                variant="secondary"
-              >
-                <Tag class="h-3 w-3" />
-                {{ tag }}
-              </Badge>
+              <span class="w-12 shrink-0 font-mono text-xs text-muted-foreground">
+                {{ formatMonthDay(post.published) }}
+              </span>
+              <span class="min-w-0 truncate text-sm font-medium text-foreground">
+                {{ post.title }}
+              </span>
+              <div class="ml-auto flex shrink-0 items-center gap-1">
+                <Badge v-for="tag in post.tags" :key="tag" variant="secondary">
+                  <TagIcon class="size-3" />
+                  {{ tag }}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div v-if="yearArchives.length === 0" class="text-center py-16 text-muted-foreground">
-        <Archive class="h-12 w-12 mx-auto mb-4 opacity-20" />
-        <p class="text-lg">暂无归档文章</p>
+        <div
+          v-if="yearArchives.length === 0"
+          class="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground"
+        >
+          <ArchiveIcon class="size-12 opacity-20" />
+          <p class="text-lg">暂无归档文章</p>
+        </div>
       </div>
-    </div>
     </Transition>
   </div>
 </template>

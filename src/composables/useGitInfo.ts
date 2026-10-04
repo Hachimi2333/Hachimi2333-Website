@@ -21,39 +21,18 @@ export function useGitInfo() {
     filesChanged: Number(__FILES_CHANGED__),
   }
 
-  const GITHUB_REPO = 'https://github.com/Hachimi2333/Hachimi2333-Website'
-  const commitUrl = `${GITHUB_REPO}/commit/${gitInfo.hashFull}`
+  // The repository URL is injected at build time. `hashFull` is empty when the
+  // build ran outside a git checkout (CI tarball), so only offer a link when
+  // there is a commit to link to.
+  const commitUrl = gitInfo.hashFull ? `${__GITHUB_REPO__}/commit/${gitInfo.hashFull}` : ''
 
-  // 处理提交内容：限制最多显示3行，...接在第三行末尾
+  // Commit bodies can be long: keep the first three non-empty lines.
   const formattedBody = computed(() => {
-    if (!gitInfo.body) return null
-    const lines = gitInfo.body.split('\n').filter(line => line.trim())
+    const lines = gitInfo.body.split('\n').filter((line) => line.trim())
     if (lines.length === 0) return null
-    if (lines.length > 3) {
-      return lines.slice(0, 3).join('\n') + '...'
-    }
+    if (lines.length > 3) return `${lines.slice(0, 3).join('\n')}...`
     return lines.join('\n')
   })
 
-  // 计算 Diffstat Blocks（5个方块，与 GitHub 一致）
-  const diffstatBlocks = computed(() => {
-    const total = gitInfo.insertions + gitInfo.deletions
-    if (total === 0) return Array(5).fill('neutral')
-
-    // 按比例四舍五入计算绿色方块数量
-    const greenCount = Math.round((gitInfo.insertions / total) * 5)
-    const redCount = 5 - greenCount
-
-    return [
-      ...Array(greenCount).fill('green'),
-      ...Array(redCount).fill('red'),
-    ]
-  })
-
-  return {
-    gitInfo,
-    commitUrl,
-    formattedBody,
-    diffstatBlocks,
-  }
+  return { gitInfo, commitUrl, formattedBody }
 }

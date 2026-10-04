@@ -21,6 +21,8 @@ const router = createRouter({
       path: '/posts/:slug',
       name: 'post-detail',
       component: () => import('@/views/blog/PostDetailView.vue'),
+      // The real title is set by the view once the post is resolved.
+      meta: { title: `文章 - ${BASE_TITLE}` },
     },
     {
       path: '/tools',
@@ -40,15 +42,26 @@ const router = createRouter({
       component: () => import('@/tools/AppIconGeneratorView.vue'),
       meta: { title: `App 图标生成器 - ${BASE_TITLE}` },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { title: `页面未找到 - ${BASE_TITLE}` },
+    },
   ],
-  scrollBehavior(_to, _from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
+    // Restore the browser's position on back/forward.
     if (savedPosition) return savedPosition
-    return { top: 0, behavior: 'smooth' }
+    // Keep the scroll position when only the query string changes (pagination),
+    // and jump instantly on a real page change — a smooth scroll from the bottom
+    // of a long list looks broken.
+    if (to.path === from.path) return false
+    return { top: 0 }
   },
 })
 
 router.afterEach((to) => {
-  document.title = (to.meta.title as string) || BASE_TITLE
+  document.title = (to.meta.title as string | undefined) ?? BASE_TITLE
 })
 
 export default router

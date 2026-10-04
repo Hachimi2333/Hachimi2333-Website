@@ -52,32 +52,36 @@ const presets = [
     <PopoverTrigger as-child>
       <Button
         variant="outline"
+        size="icon-sm"
         :disabled="disabled"
-        class="h-8 w-8 p-0 border-input"
-        :class="disabled ? 'opacity-40 cursor-not-allowed' : ''"
+        class="border-input"
+        :aria-label="`选择颜色，当前 ${modelValue}`"
       >
-        <span class="h-5 w-5 rounded-none border border-input" :style="{ background: modelValue }" />
+        <span class="size-5 rounded-sm border border-input" :style="{ background: modelValue }" />
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-3" align="end">
-      <div class="space-y-3">
+      <div class="flex flex-col gap-3">
         <div class="grid grid-cols-8 gap-1">
           <button
             v-for="color in presets"
             :key="color"
-            class="h-6 w-6 rounded-none border border-input transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+            type="button"
+            class="size-6 rounded-sm border border-input transition-transform hover:scale-110 focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:outline-none"
             :class="modelValue === color ? 'ring-2 ring-ring ring-offset-1' : ''"
             :style="{ background: color }"
+            :aria-label="color"
             @click="selectPreset(color)"
           />
         </div>
         <div class="flex items-center gap-2">
-          <div class="relative h-8 w-8 shrink-0 rounded-none border border-input overflow-hidden cursor-pointer">
+          <div class="relative size-8 shrink-0 cursor-pointer overflow-hidden rounded-sm border border-input">
             <div class="absolute inset-0" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);" />
             <input
               type="color"
               :value="internalValue"
-              class="absolute inset-0 opacity-0 cursor-pointer"
+              aria-label="自定义颜色"
+              class="absolute inset-0 cursor-pointer opacity-0"
               @input="onPickerInput"
             />
           </div>

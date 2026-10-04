@@ -2,7 +2,7 @@
 import type { PaginationEllipsisProps } from 'reka-ui'
 
 import type { HTMLAttributes } from 'vue'
-import { PhDotsThree } from '@phosphor-icons/vue'
+import { MoreHorizontalIcon } from '@lucide/vue'
 import { reactiveOmit } from '@vueuse/core'
 import { PaginationEllipsis } from 'reka-ui'
 import { cn } from '@/lib/utils'
@@ -19,7 +19,7 @@ const delegatedProps = reactiveOmit(props, 'class')
     :class="cn('size-8 [&_svg:not([class*=size-])]:size-4 flex items-center justify-center', props.class)"
   >
     <slot>
-      <PhDotsThree />
+      <MoreHorizontalIcon />
       <span class="sr-only">More pages</span>
     </slot>
   </PaginationEllipsis>
