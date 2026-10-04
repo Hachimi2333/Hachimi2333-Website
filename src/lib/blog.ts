@@ -6,14 +6,39 @@ import {
   readString,
   readStringArray,
 } from './frontmatter'
-import { POSTS_GLOB, slugFromPath } from './blog-paths'
+import { POSTS_DIR, slugFromPath } from './blog-paths'
 
 // Eagerly inline every post as raw text; `?raw` keeps the frontmatter intact.
-const mdModules = import.meta.glob(POSTS_GLOB, {
+//
+// The pattern MUST be written literally right here. Vite's `import.meta.glob` is
+// a compile-time transform and `validateLiteral` rejects anything that is not an
+// inline string literal — a `const` holding the string fails with "Invalid glob
+// import syntax: Could only use literals" in dev, while the production build
+// exits 0 and silently inlines ZERO posts (the blog renders empty even though the
+// Node-side sitemap, which reads the directory directly, still lists every post).
+// Keep in sync with POSTS_DIR; the check below enforces it.
+const mdModules = import.meta.glob('/content/posts/*.md', {
   eager: true,
   query: '?raw',
   import: 'default',
 }) as Record<string, string>
+
+const resolvedPaths = Object.keys(mdModules)
+
+if (resolvedPaths.length === 0) {
+  throw new Error(
+    `No posts matched "${POSTS_DIR}/*.md". Check that the directory exists and that ` +
+      'the glob written in src/lib/blog.ts matches POSTS_DIR in src/lib/blog-paths.ts.',
+  )
+}
+
+const strayPath = resolvedPaths.find((path) => !path.startsWith(`/${POSTS_DIR}/`))
+if (strayPath) {
+  throw new Error(
+    `The glob in src/lib/blog.ts resolved "${strayPath}", which is outside POSTS_DIR ` +
+      `("${POSTS_DIR}" in src/lib/blog-paths.ts). The two have drifted apart — update both.`,
+  )
+}
 
 function parseMarkdownFiles(): BlogPost[] {
   const posts: BlogPost[] = []
