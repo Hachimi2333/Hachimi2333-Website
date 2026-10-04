@@ -171,7 +171,19 @@ Cloudflare Workers + Static Assets，配置在 `wrangler.jsonc`：
 `assets.directory = ./dist`，`not_found_handling = single-page-application`（SPA 回退）。
 没有 Worker 脚本。`public/_headers` 会被复制到 `dist/` 并提供缓存与安全响应头。
 
-**www → 非 www 跳转无法写在 `_redirects` 里**（Cloudflare 不支持域名级跳转），
-需要在控制台的 Redirect Rules 里单独配置。详见 README。
+**跳转方向：`hachimi2333.top` → `www.hachimi2333.top`（apex → www，`www` 是 canonical）。**
+`_redirects` **不支持域名级跳转**（官方支持矩阵里明确标 ❌），所以这条规则不能写进仓库，
+必须在控制台 **Rules → Overview → Create rule → Redirect Rule** 里配：
+`https://hachimi2333.top/*` → `https://www.hachimi2333.top/${1}`，status `301`，勾选保留 query string。
+
+凡是与 canonical host 相关的常量都必须指向 `www.hachimi2333.top`，**改方向时这几处要一起改**：
+
+| 位置 | 内容 |
+|---|---|
+| `index.html` | `rel="canonical"` 与 `og:url` |
+| `scripts/sitemap.ts` | `SITE_URL` 默认值 |
+| `public/robots.txt` | `Sitemap:` 行 |
+| `src/components/layout/AppFooter.vue` | 页脚的自我链接 |
+| `content/posts/*.md` | 封面图与正文链接走 `static.hachimi2333.top`（内容，非配置） |
 
 构建期站点源用 `SITE_URL` 覆盖（默认 `https://www.hachimi2333.top`），影响 `sitemap.xml` 的绝对 URL。

@@ -186,8 +186,30 @@ npm run deploy         # build + publish to production
 
 These cannot be expressed in the repository:
 
-1. **`www` → apex redirect.** `_redirects` only supports path-level rules, and Cloudflare explicitly does not support domain-level redirects (see the [Redirects docs](https://developers.cloudflare.com/workers/static-assets/redirects/)). Recreate the old rule in **Cloudflare dashboard → your zone → Rules → Redirect Rules**: when the hostname is `www.hachimi2333.top`, `301` to `https://hachimi2333.top` with the same path.
-2. **DNS / custom domain.** In the Worker's **Settings → Domains & Routes**, bind `hachimi2333.top` (and `www` for the redirect above).
+1. **Apex → `www` redirect.** The `_redirects` file explicitly does not support domain-level redirects — see the "Domain-level redirects ❌" row in Cloudflare's [supported features table](https://developers.cloudflare.com/workers/static-assets/redirects/#advanced-redirects) — so this cannot live in the repository. In the dashboard, open **Rules → Overview → Create rule → Redirect Rule** and apply the official [root → WWW recipe](https://developers.cloudflare.com/rules/url-forwarding/examples/redirect-root-to-www/):
+
+   | Field | Value |
+   | --- | --- |
+   | When incoming requests match | Wildcard pattern |
+   | Request URL | `https://hachimi2333.top/*` |
+   | Target URL | `https://www.hachimi2333.top/${1}` |
+   | Status code | `301` |
+   | Preserve query string | Enabled |
+
+   `www.hachimi2333.top` is already the canonical host everywhere in this repository, so **no code change is needed for this direction** — only the rule above. The host constants that must always agree with it:
+
+   | Where | What |
+   | --- | --- |
+   | [`index.html`](./index.html) | `rel="canonical"` and `og:url` |
+   | [`scripts/sitemap.ts`](./scripts/sitemap.ts) | the `SITE_URL` default |
+   | [`public/robots.txt`](./public/robots.txt) | the `Sitemap:` line |
+   | [`AppFooter.vue`](./src/components/layout/AppFooter.vue) | the footer's self-link |
+   | `content/posts/*.md` | cover images and in-post links point at `static.hachimi2333.top` |
+
+   If the canonical host is ever flipped, all of them have to move together.
+
+   > The pattern matches `https://` only — the official recipe deliberately leaves `http://hachimi2333.top/…` alone. Turn on **SSL/TLS → Edge Certificates → Always Use HTTPS** so the plain-HTTP apex request is upgraded first and then caught by this rule. Without it, `http` on the apex host is served as-is and becomes a duplicate of the canonical site.
+2. **DNS / custom domain.** In the Worker's **Settings → Domains & Routes**, bind **both** hostnames: `www.hachimi2333.top` (canonical) and `hachimi2333.top` (so the redirect rule above has traffic to act on). Custom Domains are proxied by Cloudflare automatically, which Redirect Rules require.
 
 ### Build-time environment
 
