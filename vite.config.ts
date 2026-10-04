@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { sitemapPlugin } from './build/sitemap'
+import { sitemapPlugin } from './scripts/sitemap'
 
 const GITHUB_REPO = 'https://github.com/Hachimi2333/Hachimi2333-Website'
 

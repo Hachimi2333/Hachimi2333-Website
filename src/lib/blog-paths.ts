@@ -2,7 +2,7 @@
  * Single source of truth for the blog content location.
  *
  * Imported by both the browser-side blog index (`src/lib/blog.ts`) and the
- * Node-side sitemap plugin (`build/sitemap.ts`), so this module must stay free of
+ * Node-side sitemap plugin (`scripts/sitemap.ts`), so this module must stay free of
  * `import.meta.glob`, `node:` built-ins, and any other environment specific API.
  *
  * `blog.ts` needs the directory as a glob pattern, but Vite only accepts a
