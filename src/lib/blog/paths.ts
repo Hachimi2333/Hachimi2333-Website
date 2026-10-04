@@ -1,11 +1,11 @@
 /**
  * Single source of truth for the blog content location.
  *
- * Imported by both the browser-side blog index (`src/lib/blog.ts`) and the
+ * Imported by both the browser-side blog index (`src/lib/blog/index.ts`) and the
  * Node-side sitemap plugin (`scripts/sitemap.ts`), so this module must stay free of
  * `import.meta.glob`, `node:` built-ins, and any other environment specific API.
  *
- * `blog.ts` needs the directory as a glob pattern, but Vite only accepts a
+ * `index.ts` needs the directory as a glob pattern, but Vite only accepts a
  * string written literally at the `import.meta.glob` call site — a `const`, even
  * a template literal built from `POSTS_DIR`, is rejected ("Could only use
  * literals") and the **production** build silently inlines zero posts. So the

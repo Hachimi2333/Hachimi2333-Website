@@ -3,8 +3,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 // Relative imports on purpose: this module is loaded by Vite's config loader,
 // which runs before `resolve.alias` exists, so `@/…` would not resolve here.
-import { parseFrontmatter, readBoolean, readDate } from '../src/lib/frontmatter'
-import { POSTS_DIR, postUrl } from '../src/lib/blog-paths'
+import { parseFrontmatter, readBoolean, readDate } from '../src/lib/blog/frontmatter'
+import { POSTS_DIR, postUrl } from '../src/lib/blog/paths'
 
 /**
  * Site origin used for canonical sitemap URLs.

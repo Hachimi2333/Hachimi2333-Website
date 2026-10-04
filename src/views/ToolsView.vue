@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
-import { tools } from '@/tools/manifest'
+import { tools } from '@/lib/tools'
 
 const router = useRouter()
 </script>

@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/pagination'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import { getAllPosts, getArchivesByYear, searchPosts } from '@/lib/blog'
-import { POSTS_ROUTE } from '@/lib/blog-paths'
+import { POSTS_ROUTE } from '@/lib/blog/paths'
 import { formatDate, formatMonthDay } from '@/lib/date'
 
 const route = useRoute()

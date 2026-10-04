@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { ListIcon, XIcon } from '@lucide/vue'
 import { Card, CardContent } from '@/components/ui/card'
-import type { TocHeading } from '@/lib/renderer'
+import type { TocHeading } from '@/lib/blog/renderer'
 
 const props = defineProps<{
   headings: TocHeading[]

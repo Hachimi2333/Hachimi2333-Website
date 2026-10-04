@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton, InputGroupText } from '@/components/ui/input-group'
 import { Slider } from '@/components/ui/slider'
-import { ColorPicker } from '@/components/ui/color-picker'
+import ColorPicker from '@/components/common/ColorPicker.vue'
 import { cn } from '@/lib/utils'
 import { searchIcons, fetchIconSvg, applyColorToSvg, getSearchIconUrl } from '@/lib/iconify'
 import { Search, Upload, Download, RotateCcw, Palette, Maximize2, ChevronDown, Loader2 } from '@lucide/vue'
-import ToolLayout from '@/tools/components/ToolLayout.vue'
-import { getToolById } from '@/tools/manifest'
+import ToolLayout from '@/components/tools/ToolLayout.vue'
+import { getToolById } from '@/lib/tools'
 
 const tool = getToolById('cover-generator')!
 

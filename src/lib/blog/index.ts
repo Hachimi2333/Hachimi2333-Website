@@ -6,7 +6,7 @@ import {
   readString,
   readStringArray,
 } from './frontmatter'
-import { POSTS_DIR, slugFromPath } from './blog-paths'
+import { POSTS_DIR, slugFromPath } from './paths'
 
 // Eagerly inline every post as raw text; `?raw` keeps the frontmatter intact.
 //
@@ -28,15 +28,15 @@ const resolvedPaths = Object.keys(mdModules)
 if (resolvedPaths.length === 0) {
   throw new Error(
     `No posts matched "${POSTS_DIR}/*.md". Check that the directory exists and that ` +
-      'the glob written in src/lib/blog.ts matches POSTS_DIR in src/lib/blog-paths.ts.',
+      'the glob written in src/lib/blog/index.ts matches POSTS_DIR in src/lib/blog/paths.ts.',
   )
 }
 
 const strayPath = resolvedPaths.find((path) => !path.startsWith(`/${POSTS_DIR}/`))
 if (strayPath) {
   throw new Error(
-    `The glob in src/lib/blog.ts resolved "${strayPath}", which is outside POSTS_DIR ` +
-      `("${POSTS_DIR}" in src/lib/blog-paths.ts). The two have drifted apart — update both.`,
+    `The glob in src/lib/blog/index.ts resolved "${strayPath}", which is outside POSTS_DIR ` +
+      `("${POSTS_DIR}" in src/lib/blog/paths.ts). The two have drifted apart — update both.`,
   )
 }
 
