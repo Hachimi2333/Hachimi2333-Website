@@ -135,6 +135,22 @@ vite build                      # closeBundle 里跑 scripts/prerender.ts
 - 覆盖层组件（Dialog/Popover 等）不要手写 `z-index`
 - 页面背景是纯色 `bg-background`，不要加动画背景
 
+### 字号
+- **字号只有一处来源：`src/style.css` 顶部的 `@theme` 字号表。** 要整体放大或缩小，只改那一块；不要在视图里写 `text-[14px]` 这类一次性值。
+- 角色固定，按语义选，不要按“看起来差不多”选：
+
+  | 角色 | class | px | 用在哪 |
+  |---|---|---|---|
+  | 微型标注 | `text-xs` | 13 | 徽章、计数、代码块标题栏 |
+  | 次级 | `text-sm` | 15 | 导航、按钮、表单标签、meta 行、目录 |
+  | 正文 | `text-base` | 17 | 文章正文、描述 |
+  | 小标题 | `text-lg` | 19 | 列表项标题、小节标题 |
+  | 页面标题 | `text-xl` 及以上 | 22+ | 页面标题、文章标题 |
+
+- **承载信息的文字不得小于 `text-sm`。** `text-xs` 只用于纯标注。曾经的坑：文章列表把标题写成 14px、摘要和日期行写成 12px，比 16px 的正文还小，层级是反的。
+- `body` 上挂了 `text-base`，正文尺寸由字号表决定，**不要依赖浏览器默认的 16px**（`--text-base` 改了而正文没变，就是这个原因）。
+- 行高用无单位比例（与 Tailwind 默认一致），不要用 `leading-7` 这类基于 rem 的绝对值——那样改字号时行高不会跟着走。
+
 ### 状态
 - composable + module-level ref 实现 singleton，不用 Pinia/Vuex
 - 主题用 `useTheme()`；`dark` class 由 `index.html` 内联脚本在首帧前设置，`useTheme` 只读写，**不要**在 `onMounted` 里重新初始化（会闪主题）
