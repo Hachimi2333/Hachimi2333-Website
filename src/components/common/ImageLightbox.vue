@@ -155,12 +155,15 @@ onUnmounted(() => {
   <!--
     Rendered in place rather than through `<Teleport to="body">`.
 
-    SSR cannot write teleported children into the target element -- it records
-    them separately and leaves `<!--teleport start/end-->` placeholders behind --
-    so the client has to re-create the target anchors during hydration and
-    hydrate the teleport's slot against whatever nodes follow the app container.
-    Nothing above this component creates a containing block (no transform, no
-    filter, no z-index on `main`), so `position: fixed` behaves identically.
+    SSR cannot write teleported children into the target element: it records
+    them separately and leaves only the start/end comment markers behind, so the
+    client has to re-create the target anchors during hydration and hydrate the
+    teleport's slot against whatever nodes follow the app container. Nothing
+    above this component creates a containing block (no transform, no filter, no
+    z-index on `main`), so `position: fixed` behaves identically.
+
+    Do not write a literal comment terminator anywhere in here. It closes this
+    comment early and the remaining text renders as visible page content.
   -->
   <Transition name="lightbox">
     <div

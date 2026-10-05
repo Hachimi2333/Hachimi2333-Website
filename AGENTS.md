@@ -223,7 +223,8 @@ npm run typecheck && npm run build
 13. **构建不依赖 git 完整历史。** `vite.config.ts` 的 `git()` 失败时返回空串，页脚降级显示 `dev`；浅克隆（`depth 1`）没有 `HEAD~1`，不要假设 git 一定可用。
 14. **验证预渲染结果时，一个进程只能挂载一个路由。** vue-router 的 `started` 是模块级标志：同一个 Node 进程里第二次 `install()` 不会做首次导航，`router.isReady()` 永不 resolve，于是「什么都没挂载」看起来和「hydrate 完美」一模一样——`#app` 前后一致，假绿。必须每个路由开一个进程。
 15. **`npm run preview` 只做 SPA 回退**，真实的路由/404 行为只能靠 `npm run cf:dev` 或线上验证。`dist/` 里 HTML 按 `<path>.html` 平铺，是为了让 preview 也能解析到（sirv 只认 `<path>.html`，不认 `<path>/index.html`）。
-16. **`data-v-*`（scoped style）与 `value=""` 会在 hydrate 时与首帧有属性级差异。** 前者是 Vue 在 hydrate 时补写 scope id，后者是 `v-model` 走 DOM property 而非 attribute。都不影响元素结构，字符串对比时要先把 `<!--...-->` 注释剥掉再比。
+16. **`data-v-*`（scoped style）与 `value=""` 会在 hydrate 时与首帧有属性级差异。** 前者是 Vue 在 hydrate 时补写 scope id，后者是 `v-model` 走 DOM property 而非 attribute。都不影响元素结构，字符串对比时要先把注释剥掉再比。
+17. **模板注释里不要再出现注释结束符。** `ImageLightbox.vue` 的解释性注释里嵌了一个「teleport start/end」注释字面量，HTML 解析到第一个结束符就把注释截断了，**剩下的注释文字会被当成正文渲染到页面上**——文章页底部因此多出过一段英文。模板注释里提到注释标记时只写 `teleport start/end`，不要带尖括号。单独出现的 `--` 无害，只有 `-->` 和 `--!>` 会提前终止注释；`.vue` 模板与 Markdown 都适用。
 
 ## 9. 部署
 
