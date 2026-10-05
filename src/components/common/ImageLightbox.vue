@@ -152,47 +152,55 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="lightbox">
-      <div
-        v-if="visible"
-        role="dialog"
-        aria-modal="true"
-        aria-label="图片预览"
-        class="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-        @click="onBackdropClick"
-        @wheel.prevent="onWheel"
-        @touchstart="onTouchStart"
-        @touchmove.prevent="onTouchMove"
-        @touchend="onTouchEnd"
+  <!--
+    Rendered in place rather than through `<Teleport to="body">`.
+
+    SSR cannot write teleported children into the target element -- it records
+    them separately and leaves `<!--teleport start/end-->` placeholders behind --
+    so the client has to re-create the target anchors during hydration and
+    hydrate the teleport's slot against whatever nodes follow the app container.
+    Nothing above this component creates a containing block (no transform, no
+    filter, no z-index on `main`), so `position: fixed` behaves identically.
+  -->
+  <Transition name="lightbox">
+    <div
+      v-if="visible"
+      role="dialog"
+      aria-modal="true"
+      aria-label="图片预览"
+      class="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      @click="onBackdropClick"
+      @wheel.prevent="onWheel"
+      @touchstart="onTouchStart"
+      @touchmove.prevent="onTouchMove"
+      @touchend="onTouchEnd"
+    >
+      <button
+        type="button"
+        class="absolute top-4 right-4 z-10 flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+        aria-label="关闭预览"
+        @click="emit('close')"
+        @touchstart.stop
       >
-        <button
-          type="button"
-          class="absolute top-4 right-4 z-10 flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-          aria-label="关闭预览"
-          @click="emit('close')"
-          @touchstart.stop
-        >
-          <XIcon />
-        </button>
-        <img
-          :src="src"
-          :alt="alt ?? ''"
-          :style="{
-            transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
-            cursor: isDragging ? 'grabbing' : 'grab',
-            transition: isDragging ? 'none' : 'transform 0.15s ease',
-          }"
-          class="max-h-[90vh] max-w-[90vw] touch-none rounded-lg object-contain shadow-2xl select-none"
-          draggable="false"
-          @mousedown.prevent="onDragStart"
-          @mousemove="onDragMove"
-          @mouseup="onDragEnd"
-          @mouseleave="onDragEnd"
-        />
-      </div>
-    </Transition>
-  </Teleport>
+        <XIcon />
+      </button>
+      <img
+        :src="src"
+        :alt="alt ?? ''"
+        :style="{
+          transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          transition: isDragging ? 'none' : 'transform 0.15s ease',
+        }"
+        class="max-h-[90vh] max-w-[90vw] touch-none rounded-lg object-contain shadow-2xl select-none"
+        draggable="false"
+        @mousedown.prevent="onDragStart"
+        @mousemove="onDragMove"
+        @mouseup="onDragEnd"
+        @mouseleave="onDragEnd"
+      />
+    </div>
+  </Transition>
 </template>
 
 <style scoped>

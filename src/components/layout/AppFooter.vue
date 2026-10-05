@@ -2,6 +2,8 @@
 import { onMounted, ref } from 'vue'
 import GitCommitPopover from './GitCommitPopover.vue'
 import BeianInfo from './BeianInfo.vue'
+import ClientOnly from '@/components/common/ClientOnly.vue'
+import { useGitInfo } from '@/composables/useGitInfo'
 import { SITE_NAME } from '@/lib/site'
 
 /**
@@ -15,6 +17,9 @@ import { SITE_NAME } from '@/lib/site'
  * and cannot mismatch.
  */
 const year = ref(__BUILD_YEAR__)
+
+// Only used for the popover's server-rendered stand-in.
+const { gitInfo } = useGitInfo()
 
 onMounted(() => {
   year.value = new Date().getFullYear()
@@ -36,7 +41,12 @@ onMounted(() => {
 
         <span class="text-border" aria-hidden="true">/</span>
 
-        <GitCommitPopover />
+        <ClientOnly>
+          <GitCommitPopover />
+          <template #fallback>
+            <span class="px-1.5 font-mono text-xs">{{ gitInfo.hash }}</span>
+          </template>
+        </ClientOnly>
 
         <div class="ml-auto hidden sm:block">
           <BeianInfo />
