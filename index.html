@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      The title, description, og:* and canonical tags below are the template
+      defaults. `scripts/prerender.ts` overwrites all of them per route when it
+      writes dist/, and src/lib/seo.ts overwrites them again after a client-side
+      navigation. Changing the #app container or any of these tag shapes means
+      updating the patterns in scripts/prerender.ts, which fails the build if
+      they stop matching.
+    -->
     <title>Hachimi2333</title>
     <meta name="description" content="Hachimi2333 的个人网站 - 博客、工具和更多" />
     <link rel="canonical" href="https://www.hachimi2333.top/" />
@@ -33,6 +42,6 @@
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/entry-client.ts"></script>
   </body>
 </html>

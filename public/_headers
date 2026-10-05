@@ -1,6 +1,10 @@
 # Cloudflare Workers static-asset headers.
 # Copied verbatim from public/ into dist/ by Vite, then parsed by Workers.
 # Docs: https://developers.cloudflare.com/workers/static-assets/headers/
+#
+# Rules match the *request* path, and `npm run build` prerenders one HTML file
+# per route, so every route needs its own entry. Anything else under dist/ is
+# either a hashed asset under /assets/ or a small static file.
 
 /*
   X-Content-Type-Options: nosniff
@@ -21,6 +25,20 @@
 /robots.txt
   Cache-Control: public, max-age=3600
 
-# The SPA shell must be revalidated so a new deploy is picked up immediately.
+# Prerendered HTML must be revalidated so a new deploy is picked up immediately.
+# `/` is listed alongside /index.html because the rule matches the request path,
+# not the asset it resolves to.
+/
 /index.html
+/404.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# The post list, and one file per post under it.
+/posts
+/posts/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# The tool list, and one file per tool page under it.
+/tools
+/tools/*
   Cache-Control: public, max-age=0, must-revalidate

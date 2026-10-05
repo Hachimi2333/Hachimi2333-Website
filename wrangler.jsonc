@@ -1,5 +1,5 @@
 {
-  // Cloudflare Workers with Static Assets — serves the Vite build output.
+  // Cloudflare Workers with Static Assets — serves the prerendered build output.
   // Deploy:  npm run deploy
   // Preview: npm run deploy:preview
   "$schema": "node_modules/wrangler/config-schema.json",
@@ -7,12 +7,22 @@
   "compatibility_date": "2026-10-03",
 
   "assets": {
-    // Vite writes index.html + hashed bundles here.
+    // `npm run build` writes one HTML file per route here, alongside the hashed
+    // bundles: index.html, posts.html, posts/<slug>.html, tools.html, ...
     "directory": "./dist",
-    // No Worker script: this is an assets-only Worker. Any request that does not
-    // match a file is answered with /index.html at 200 OK, which is exactly what
-    // vue-router's history mode needs for deep links such as /posts/1.
-    "not_found_handling": "single-page-application"
+
+    // Every prerendered page is written as `<path>.html`, so the canonical URL
+    // is the one served directly (200) and a trailing slash 307s back to it.
+    // `auto-trailing-slash` would do the same here, but it would flip the moment
+    // a folder index appeared, so the intent is stated explicitly.
+    "html_handling": "drop-trailing-slash",
+
+    // No Worker script: this is an assets-only Worker. Anything that is not a
+    // prerendered file is answered with dist/404.html at 404, which is the page
+    // the catch-all route renders. The previous "single-page-application"
+    // fallback returned the *home* page at 200 for every unknown URL, so a bad
+    // deep link served the wrong markup before the client router corrected it.
+    "not_found_handling": "404-page"
   },
 
   "observability": {

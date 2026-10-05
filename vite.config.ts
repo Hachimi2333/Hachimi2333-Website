@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { sitemapPlugin } from './scripts/sitemap'
 import { blogPlugin } from './scripts/blog-plugin'
+import { prerenderPlugin } from './scripts/prerender'
 
 const GITHUB_REPO = 'https://github.com/Hachimi2333/Hachimi2333-Website'
 
@@ -49,14 +50,40 @@ const insertions = commitStat.match(/(\d+) insertion/)?.[1] ?? '0'
 const deletions = commitStat.match(/(\d+) deletion/)?.[1] ?? '0'
 const filesChanged = commitStat.match(/(\d+) file/)?.[1] ?? '0'
 
-export default defineConfig({
-  plugins: [vue(), tailwindcss(), blogPlugin(), sitemapPlugin({ siteUrl })],
+export default defineConfig(({ command }) => ({
+  plugins: [vue(), tailwindcss(), blogPlugin(), sitemapPlugin({ siteUrl }), prerenderPlugin()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Pin the Vue runtime and vue-router into a single chunk.
+        //
+        // Left to the default splitting, vue-router landed in its own chunk
+        // (`index-*.js`) separate from the Vue runtime
+        // (`_plugin-vue_export-helper-*.js`). Re-exporting `inject` across that
+        // boundary went wrong: `useRoute()` and `useRouter()` both collapsed to
+        // a bare `inject()` call with no key, so they returned `undefined` in
+        // every component rendered by `<RouterView>` -- the post list crashed
+        // reading `route.query`, while `AppHeader` (outside `<RouterView>`)
+        // worked because it never crossed the boundary.
+        manualChunks(id: string) {
+          return /[\\/]node_modules[\\/](vue|vue-router|@vue)[\\/]/.test(id) ? 'vue' : undefined
+        },
+      },
+    },
+  },
   define: {
+    // `vite build` always emits prerendered HTML, so the client always hydrates;
+    // `vite dev` serves an empty `<div id="app">`, so it must not. Deriving this
+    // from `command` rather than `import.meta.env.DEV` also means
+    // `vite build --mode development` still hydrates, which is what makes it
+    // possible to run the prerendered output against Vue's *dev* hydration
+    // warnings.
+    __HYDRATE__: JSON.stringify(command === 'build'),
     __SITE_URL__: JSON.stringify(siteUrl),
     __BUILD_YEAR__: String(new Date().getFullYear()),
     __COMMIT_HASH__: JSON.stringify(commitHash),
@@ -68,4 +95,4 @@ export default defineConfig({
     __FILES_CHANGED__: JSON.stringify(filesChanged),
     __GITHUB_REPO__: JSON.stringify(GITHUB_REPO),
   },
-})
+}))
