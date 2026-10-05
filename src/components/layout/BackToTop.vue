@@ -20,11 +20,11 @@ function scrollToTop() {
     <button
       v-show="show"
       type="button"
-      class="fixed right-4 bottom-8 z-100 flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-colors hover:bg-accent sm:right-8"
+      class="fixed right-4 bottom-6 z-40 flex size-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-accent hover:text-foreground sm:right-6"
       aria-label="回到顶部"
       @click="scrollToTop"
     >
-      <ChevronUpIcon class="size-5 text-foreground" />
+      <ChevronUpIcon class="size-4" />
     </button>
   </Transition>
 </template>
@@ -32,7 +32,9 @@ function scrollToTop() {
 <style scoped>
 .back-to-top-enter-active,
 .back-to-top-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 .back-to-top-enter-from,
 .back-to-top-leave-to {

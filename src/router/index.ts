@@ -52,9 +52,10 @@ const router = createRouter({
 })
 
 // Titles live in one place (`@/lib/seo`) so the prerender step and the client
-// cannot disagree about what a page is called.
-router.afterEach((to) => {
-  applyPageMeta(resolveRouteMeta(to))
+// cannot disagree about what a page is called. The post branch of that lookup
+// is a dynamic import, hence the await.
+router.afterEach(async (to) => {
+  applyPageMeta(await resolveRouteMeta(to))
 })
 
 export default router

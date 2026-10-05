@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 // Build-time constants injected by `define` in vite.config.ts.
+declare const __SITE_URL__: string
+declare const __BUILD_YEAR__: number
 declare const __COMMIT_HASH__: string
 declare const __COMMIT_HASH_FULL__: string
 declare const __COMMIT_SUBJECT__: string

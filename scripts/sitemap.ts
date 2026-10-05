@@ -6,14 +6,6 @@ import path from 'node:path'
 import { parseFrontmatter, readBoolean, readDate } from '../src/lib/blog/frontmatter'
 import { POSTS_DIR, postUrl } from '../src/lib/blog/paths'
 
-/**
- * Site origin used for canonical sitemap URLs.
- *
- * Overridable so a preview/staging build does not emit production URLs:
- *   SITE_URL=https://staging.example.com npm run build
- */
-const DEFAULT_SITE_URL = 'https://www.hachimi2333.top'
-
 /** Static pages that always exist, with their crawl hints. */
 const STATIC_PAGES: { path: string; priority: string; changefreq: string }[] = [
   { path: '/', priority: '1.0', changefreq: 'monthly' },
@@ -85,27 +77,32 @@ function buildSitemapXml(entries: PostEntry[], siteUrl: string): string {
   return lines.join('\n')
 }
 
-export function sitemapPlugin(): Plugin {
+export function sitemapPlugin(options: { siteUrl: string }): Plugin {
   let root = ''
   let outDir = ''
+  let isSsrBuild = false
 
   return {
     name: 'sitemap-generator',
     configResolved(config) {
       root = config.root
       outDir = config.build.outDir
+      isSsrBuild = Boolean(config.build.ssr)
     },
     closeBundle() {
-      const siteUrl = (process.env.SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '')
+      // The SSR pass exists only to prerender HTML; it writes to `dist-ssr/` and
+      // must not drop a second sitemap there.
+      if (isSsrBuild) return
+
       const entries = collectPosts(path.resolve(root, POSTS_DIR))
-      const sitemap = buildSitemapXml(entries, siteUrl)
+      const sitemap = buildSitemapXml(entries, options.siteUrl)
 
       const resolvedOutDir = path.resolve(root, outDir)
       fs.mkdirSync(resolvedOutDir, { recursive: true })
       fs.writeFileSync(path.join(resolvedOutDir, 'sitemap.xml'), sitemap, 'utf-8')
 
       console.log(
-        `  \u2139 [sitemap] ${entries.length + STATIC_PAGES.length} URLs for ${siteUrl}`,
+        `  \u2139 [sitemap] ${entries.length + STATIC_PAGES.length} URLs for ${options.siteUrl}`,
       )
     },
   }

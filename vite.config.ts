@@ -9,6 +9,17 @@ import { blogPlugin } from './scripts/blog-plugin'
 const GITHUB_REPO = 'https://github.com/Hachimi2333/Hachimi2333-Website'
 
 /**
+ * Canonical origin for absolute URLs.
+ *
+ * Overridable so a preview build does not advertise production URLs:
+ *   SITE_URL=https://staging.example.com npm run build
+ *
+ * Resolved here, once, and handed to both `define` (so the client can build
+ * `rel="canonical"`) and the sitemap plugin (so the two can never disagree).
+ */
+const siteUrl = (process.env.SITE_URL || 'https://www.hachimi2333.top').replace(/\/+$/, '')
+
+/**
  * Run a git command and return its trimmed stdout.
  *
  * Builds must not depend on git being present or on the history being complete:
@@ -39,13 +50,15 @@ const deletions = commitStat.match(/(\d+) deletion/)?.[1] ?? '0'
 const filesChanged = commitStat.match(/(\d+) file/)?.[1] ?? '0'
 
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), blogPlugin(), sitemapPlugin()],
+  plugins: [vue(), tailwindcss(), blogPlugin(), sitemapPlugin({ siteUrl })],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   define: {
+    __SITE_URL__: JSON.stringify(siteUrl),
+    __BUILD_YEAR__: String(new Date().getFullYear()),
     __COMMIT_HASH__: JSON.stringify(commitHash),
     __COMMIT_HASH_FULL__: JSON.stringify(commitHashFull),
     __COMMIT_SUBJECT__: JSON.stringify(commitSubject),
