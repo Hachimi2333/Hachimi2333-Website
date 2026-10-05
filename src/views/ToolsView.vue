@@ -1,45 +1,41 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ArrowRightIcon } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
+import PageContainer from '@/components/layout/PageContainer.vue'
+import PageHeader from '@/components/layout/PageHeader.vue'
 import { tools } from '@/lib/tools'
-
-const router = useRouter()
 </script>
 
 <template>
-  <div class="container mx-auto max-w-4xl px-4 py-8">
-    <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '工具' }]" />
+  <PageContainer>
+    <PageHeader title="工具" description="在浏览器里直接运行的小工具。" />
 
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold tracking-tight">工具</h1>
-    </div>
-
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Card
+    <div class="mt-8 grid gap-3 sm:grid-cols-2">
+      <router-link
         v-for="tool in tools"
         :key="tool.id"
-        class="cursor-pointer transition-colors hover:bg-accent/50"
-        @click="router.push(tool.route)"
+        :to="tool.route"
+        class="group flex flex-col gap-4 rounded-xl border border-border/60 p-5 transition-colors hover:bg-muted/50"
       >
-        <CardHeader>
-          <div class="flex items-start justify-between">
-            <div class="flex items-center gap-3">
-              <div class="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted">
-                <component :is="tool.icon" class="size-5 text-muted-foreground" />
-              </div>
-              <div>
-                <CardTitle class="text-base">{{ tool.name }}</CardTitle>
-                <CardDescription class="mt-1">{{ tool.description }}</CardDescription>
-              </div>
-            </div>
-            <Badge variant="outline" class="shrink-0 text-xs">
-              {{ tool.version }}
-            </Badge>
-          </div>
-        </CardHeader>
-      </Card>
+        <div class="flex items-start justify-between gap-3">
+          <span class="flex size-9 items-center justify-center rounded-lg bg-muted">
+            <component :is="tool.icon" class="size-4 text-muted-foreground" />
+          </span>
+          <Badge variant="outline">{{ tool.version }}</Badge>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span class="flex items-center gap-1.5 text-sm font-medium">
+            {{ tool.name }}
+            <ArrowRightIcon
+              class="size-3.5 opacity-0 transition-opacity group-hover:opacity-100"
+            />
+          </span>
+          <span class="text-xs leading-relaxed text-muted-foreground">
+            {{ tool.description }}
+          </span>
+        </div>
+      </router-link>
     </div>
-  </div>
+  </PageContainer>
 </template>
