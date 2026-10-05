@@ -7,7 +7,7 @@ import BackToTop from './BackToTop.vue'
 <template>
   <div class="flex min-h-svh flex-col bg-background">
     <AppHeader />
-    <main class="flex-1">
+    <main class="flex flex-1 flex-col">
       <router-view />
     </main>
     <AppFooter />

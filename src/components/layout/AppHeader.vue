@@ -21,9 +21,15 @@ const NAV_ITEMS = [
  * without editing the URL.
  *
  * The three links are rendered inline at every breakpoint on purpose. They fit
- * on a 320px screen (the wordmark is what gets dropped, not the navigation), and
- * avoiding a drawer keeps `reka-ui`'s Dialog primitives -- roughly 10 kB gzipped
- * -- out of the entry chunk that every page has to download before it paints.
+ * on a 320px screen, and avoiding a drawer keeps `reka-ui`'s Dialog primitives --
+ * roughly 10 kB gzipped -- out of the entry chunk that every page has to download
+ * before it paints.
+ *
+ * The bar is a three-column grid rather than a flex row with `ml-auto`, because
+ * the navigation has to sit in the middle of the *header*, not merely after the
+ * avatar. The `minmax(0, 1fr)` outer columns are forced equal regardless of how
+ * wide the avatar or the trailing buttons grow, so the middle column cannot
+ * drift off centre the way it would with a plain `auto` track.
  */
 function isActive(to: string): boolean {
   if (to === '/') return route.path === '/'
@@ -37,17 +43,18 @@ function themeLabel(): string {
 
 <template>
   <header class="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
-    <div class="mx-auto flex h-14 w-full max-w-5xl items-center gap-1 px-3 sm:px-6">
+    <div
+      class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-3 sm:px-6"
+    >
       <router-link
         to="/"
-        class="flex shrink-0 items-center gap-2 rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        class="flex shrink-0 items-center justify-self-start rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
         :aria-label="`${SITE_NAME} 首页`"
       >
         <img src="/avatar.webp" alt="" class="size-7 rounded-md object-cover" />
-        <span class="hidden text-sm font-semibold tracking-tight sm:inline">{{ SITE_NAME }}</span>
       </router-link>
 
-      <nav class="ml-1 flex items-center gap-0.5 sm:ml-3" aria-label="主导航">
+      <nav class="flex items-center gap-0.5" aria-label="主导航">
         <router-link
           v-for="item in NAV_ITEMS"
           :key="item.to"
@@ -63,7 +70,7 @@ function themeLabel(): string {
         </router-link>
       </nav>
 
-      <div class="ml-auto flex shrink-0 items-center gap-0.5">
+      <div class="flex shrink-0 items-center gap-0.5 justify-self-end">
         <Button variant="ghost" size="icon" as-child>
           <a :href="GITHUB_URL" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <GithubMark />
