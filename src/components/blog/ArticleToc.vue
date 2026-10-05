@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
         <li v-for="item in items" :key="item.id">
           <button
             type="button"
-            class="-ml-px block w-full cursor-pointer border-l py-1 pr-2 text-left text-xs leading-relaxed transition-colors"
+            class="-ml-px block w-full cursor-pointer border-l py-1 pr-2 text-left text-sm leading-relaxed transition-colors"
             :class="
               activeId === item.id
                 ? 'border-primary font-medium text-foreground'

@@ -132,7 +132,7 @@ function handleArticleClick(event: MouseEvent) {
           {{ post.description }}
         </p>
 
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
           <span class="flex items-center gap-1.5">
             <CalendarIcon class="size-3.5" />
             <time :datetime="post.published">{{ formatDate(post.published) }}</time>
@@ -189,12 +189,12 @@ function handleArticleClick(event: MouseEvent) {
           :to="postUrl(neighbours.newer.slug)"
           class="group flex flex-col gap-1 rounded-xl border border-border/60 p-4 transition-colors hover:bg-muted/50"
         >
-          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span class="flex items-center gap-1.5 text-sm text-muted-foreground">
             <ArrowLeftIcon class="size-3.5" />
             {{ formatDate(neighbours.newer.published) }}
           </span>
           <span
-            class="text-sm font-medium text-foreground transition-colors group-hover:text-primary"
+            class="text-base font-semibold text-foreground transition-colors group-hover:text-primary"
           >
             {{ neighbours.newer.title }}
           </span>
@@ -205,12 +205,12 @@ function handleArticleClick(event: MouseEvent) {
           :to="postUrl(neighbours.older.slug)"
           class="group flex flex-col gap-1 rounded-xl border border-border/60 p-4 transition-colors hover:bg-muted/50 sm:items-end"
         >
-          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span class="flex items-center gap-1.5 text-sm text-muted-foreground">
             {{ formatDate(neighbours.older.published) }}
             <ArrowRightIcon class="size-3.5" />
           </span>
           <span
-            class="text-sm font-medium text-foreground transition-colors group-hover:text-primary sm:text-right"
+            class="text-base font-semibold text-foreground transition-colors group-hover:text-primary sm:text-right"
           >
             {{ neighbours.older.title }}
           </span>

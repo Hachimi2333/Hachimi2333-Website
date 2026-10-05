@@ -25,13 +25,13 @@ import { tools } from '@/lib/tools'
         </div>
 
         <div class="flex flex-col gap-1">
-          <span class="flex items-center gap-1.5 text-sm font-medium">
+          <span class="flex items-center gap-1.5 text-lg font-semibold tracking-tight">
             {{ tool.name }}
             <ArrowRightIcon
               class="size-3.5 opacity-0 transition-opacity group-hover:opacity-100"
             />
           </span>
-          <span class="text-xs leading-relaxed text-muted-foreground">
+          <span class="text-sm leading-relaxed text-muted-foreground">
             {{ tool.description }}
           </span>
         </div>

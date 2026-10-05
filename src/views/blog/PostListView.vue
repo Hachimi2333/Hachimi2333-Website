@@ -115,10 +115,10 @@ function clearFilters() {
     <div v-if="groups.length" class="mt-8 flex flex-col gap-6">
       <section v-for="group in groups" :key="group.year">
         <h2
-          class="sticky top-14 z-10 flex items-baseline gap-2 bg-background py-2 text-sm font-semibold"
+          class="sticky top-14 z-10 flex items-baseline gap-2 bg-background py-2 text-base font-semibold tracking-tight"
         >
           {{ group.year }}
-          <span class="text-xs font-normal text-muted-foreground">
+          <span class="text-sm font-normal text-muted-foreground">
             {{ group.posts.length }} 篇
           </span>
         </h2>
@@ -137,17 +137,17 @@ function clearFilters() {
 
               <div class="flex min-w-0 flex-1 flex-col gap-1.5">
                 <h3
-                  class="text-sm font-medium text-foreground transition-colors group-hover:text-primary"
+                  class="text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary"
                 >
                   {{ post.title }}
                 </h3>
 
-                <p class="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                <p class="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                   {{ post.excerpt }}
                 </p>
 
                 <div
-                  class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground"
+                  class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground"
                 >
                   <time :datetime="post.published">{{ formatDate(post.published) }}</time>
                   <span aria-hidden="true">·</span>
@@ -171,8 +171,8 @@ function clearFilters() {
     >
       <FileTextIcon class="size-10 opacity-30" />
       <div class="flex flex-col gap-1">
-        <p class="text-sm font-medium text-foreground">没有匹配的文章</p>
-        <p class="text-xs">换一个关键词，或者清除筛选条件</p>
+        <p class="text-base font-medium text-foreground">没有匹配的文章</p>
+        <p class="text-sm">换一个关键词，或者清除筛选条件</p>
       </div>
       <Button v-if="filtersActive" variant="outline" size="sm" class="mt-1" @click="clearFilters">
         清除筛选
