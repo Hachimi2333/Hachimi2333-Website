@@ -122,12 +122,37 @@ npm run cf:dev     # build + wrangler dev（Workers 运行时）
 ## 7. 协作流程
 
 ### 提交信息
-`<type>(<scope>): <imperative English summary>`，单行不超过约 72 字符。
+
+**每条提交都必须有正文，只有标题的提交一律视为未完成。** 提交前用 `git log -1` 自己看一眼。
+
+```
+<type>(<scope>): <imperative English summary>      ← 标题，≤ 72 字符
+
+<为什么改、改了什么取舍、怎么验证的>                ← 正文，空一行后开始
+```
 
 - `type`：`feat` / `fix` / `refactor` / `docs` / `chore` / `style` / `perf` / `build` / `test`
 - `scope` 可选，用目录或领域名：`blog`、`tools`、`build`、`ui`
-- 摘要用英文祈使句（`add`，不是 `added`）
-- 例：`fix(blog): inline the import.meta.glob literal so posts actually bundle`
+- 标题用英文祈使句（`add`，不是 `added`），句尾不加句号
+- 正文用英文。写**动机、约束和被否决的方案**，不要复述 diff（`git show` 已经能看到）
+- 一次提交只做一件事，跨领域的改动拆开；正文要点用 `-` 列表
+- 行为变化、破坏性影响、验证方式都要写清楚
+- 多段正文用 `git commit -F <file>` 或第二个 `-m`，不要在一条 `-m` 里塞 `\n`
+
+例：
+
+```
+fix(blog): inline the import.meta.glob literal so posts actually bundle
+
+`import.meta.glob` is a compile-time transform, and Vite requires the pattern
+to be a literal written at the call site. Routing it through a shared
+`POSTS_GLOB` constant made dev fail loudly but left the production build
+exiting 0 with zero posts inlined -- and the Node-side sitemap still listed
+every post, so the failure was invisible in CI.
+
+- write the pattern inline and validate it against `POSTS_DIR`
+- throw when the glob resolves no files, or resolves a path outside POSTS_DIR
+```
 
 ### 提交前必须双绿
 ```bash
