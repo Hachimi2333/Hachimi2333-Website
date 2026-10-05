@@ -83,15 +83,6 @@ watch(searchQuery, () => {
 function openPost(slug: string) {
   void router.push(`${POSTS_ROUTE}/${slug}`)
 }
-
-function extractDescription(post: { description: string; content: string }): string {
-  if (post.description) return post.description
-  const first = post.content
-    .split('\n')
-    .map((line) => line.trim())
-    .find((line) => line && !line.startsWith('#') && !line.startsWith('!') && !line.startsWith('---'))
-  return (first ?? '').replace(/\*\*|__|\*|_|\[.*?\]\(.*?\)|`{1,3}/g, '').slice(0, 120)
-}
 </script>
 
 <template>
@@ -162,7 +153,7 @@ function extractDescription(post: { description: string; content: string }): str
               </div>
 
               <p class="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                {{ extractDescription(post) }}
+                {{ post.excerpt }}
               </p>
             </div>
 

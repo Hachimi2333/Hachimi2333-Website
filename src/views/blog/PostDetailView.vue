@@ -1,41 +1,35 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWindowScroll } from '@vueuse/core'
 import { ArrowLeft, Calendar, Clock, FolderOpen, Tag } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import ArticleToc from '@/components/blog/ArticleToc.vue'
 import ImageLightbox from '@/components/common/ImageLightbox.vue'
 import { getPostBySlug } from '@/lib/blog'
-import { renderMarkdown, type TocHeading } from '@/lib/blog/markdown'
+import { getRenderedPost } from '@/lib/blog/content'
 import { formatDate } from '@/lib/date'
-import type { BlogPost } from '@/types/blog'
 
 const route = useRoute()
 const router = useRouter()
 const { y: scrollY } = useWindowScroll()
 
-const post = ref<BlogPost>()
-const renderedContent = ref('')
-const readingTime = ref('')
-const tocHeadings = ref<TocHeading[]>([])
-const loading = ref(true)
+const post = computed(() => getPostBySlug(route.params.slug as string))
+
+/**
+ * The body arrives pre-rendered from `scripts/blog-plugin.ts`, so this is a
+ * synchronous lookup rather than an `await renderMarkdown()` in `onMounted`.
+ * That is what makes the prerendered HTML and the first client render agree --
+ * with the old async version every article page hydrated into a loading skeleton.
+ */
+const rendered = computed(() => (post.value ? getRenderedPost(post.value.slug) : undefined))
+const tocHeadings = computed(() => rendered.value?.headings.filter((h) => h.level >= 2) ?? [])
 
 const scrolled = computed(() => scrollY.value > 300)
 const hasToc = computed(() => tocHeadings.value.length > 0)
 const backAtRight = computed(() => !hasToc.value && !scrolled.value)
-
-/**
- * Guards against out-of-order renders.
- *
- * `renderMarkdown` is async, so navigating quickly between two posts can let an
- * older render resolve after a newer one and overwrite it with the wrong body.
- * Only the most recently started render is allowed to commit.
- */
-let renderToken = 0
 
 const lightboxVisible = ref(false)
 const lightboxSrc = ref('')
@@ -112,89 +106,12 @@ function handleArticleClick(event: MouseEvent) {
     openLightbox(image.src, image.alt || undefined)
   }
 }
-
-function updateReadingTime(content: string) {
-  readingTime.value = `${Math.max(1, Math.ceil(content.length / 400))} 分钟`
-}
-
-async function loadPost() {
-  const token = ++renderToken
-  loading.value = true
-
-  const slug = route.params.slug as string
-  const found = getPostBySlug(slug)
-  post.value = found
-  tocHeadings.value = []
-
-  if (!found) {
-    document.title = '文章未找到 - Hachimi2333'
-    loading.value = false
-    return
-  }
-
-  document.title = `${found.title} - Hachimi2333`
-  updateReadingTime(found.content)
-
-  const rendered = await renderMarkdown(found.content)
-  // A newer navigation started while this render was in flight: discard it.
-  if (token !== renderToken) return
-
-  renderedContent.value = rendered.html
-  tocHeadings.value = rendered.headings.filter((heading) => heading.level >= 2)
-  loading.value = false
-}
-
-onMounted(loadPost)
-
-watch(() => route.params.slug, loadPost)
 </script>
 
 <template>
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <!-- Loading skeleton -->
-    <template v-if="loading">
-      <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: '加载中...' }]" />
-
-      <header class="mb-6">
-        <Skeleton class="mb-4 h-9 w-3/4" />
-        <div class="flex flex-wrap items-center gap-4">
-          <Skeleton class="h-4 w-24" />
-          <Skeleton class="h-4 w-20" />
-          <Skeleton class="h-4 w-16" />
-        </div>
-      </header>
-
-      <div class="flex gap-6">
-        <Card class="min-w-0 flex-1 py-0">
-          <div class="flex flex-col gap-4 p-5">
-            <Skeleton class="h-64 w-full" />
-            <Skeleton class="h-4 w-full" />
-            <Skeleton class="h-4 w-5/6" />
-            <Skeleton class="h-4 w-4/6" />
-            <Skeleton class="h-4 w-full" />
-            <Skeleton class="h-4 w-3/4" />
-          </div>
-        </Card>
-
-        <div class="hidden w-56 shrink-0 flex-col gap-4 self-start lg:flex">
-          <Card>
-            <Skeleton class="h-10 w-full" />
-          </Card>
-          <Card>
-            <div class="flex flex-col gap-3 p-4">
-              <Skeleton class="h-4 w-20" />
-              <Skeleton class="h-3 w-full" />
-              <Skeleton class="h-3 w-5/6" />
-              <Skeleton class="h-3 w-4/6" />
-              <Skeleton class="h-3 w-full" />
-            </div>
-          </Card>
-        </div>
-      </div>
-    </template>
-
     <!-- Loaded: post found -->
-    <template v-else-if="post">
+    <template v-if="post">
       <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: post.title }]" />
 
       <!-- Post header -->
@@ -207,7 +124,7 @@ watch(() => route.params.slug, loadPost)
           </div>
           <div class="flex items-center gap-1.5">
             <Clock class="size-4" />
-            <span>{{ readingTime }}</span>
+            <span>{{ post.readingTime }} 分钟</span>
           </div>
           <div v-if="post.category" class="flex items-center gap-1.5">
             <FolderOpen class="size-4" />
@@ -235,7 +152,7 @@ watch(() => route.params.slug, loadPost)
             </div>
 
             <!-- eslint-disable-next-line vue/no-v-html -- trusted local Markdown -->
-            <article class="prose max-w-none scroll-mt-20" v-html="renderedContent" @click="handleArticleClick" />
+            <article class="prose max-w-none scroll-mt-20" v-html="rendered?.html" @click="handleArticleClick" />
           </div>
         </Card>
 

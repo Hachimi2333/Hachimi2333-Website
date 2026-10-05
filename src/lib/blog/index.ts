@@ -1,77 +1,24 @@
-import type { BlogPost, BlogMeta } from '@/types/blog'
-import {
-  parseFrontmatter,
-  readBoolean,
-  readDate,
-  readString,
-  readStringArray,
-} from './frontmatter'
-import { POSTS_DIR, slugFromPath } from './paths'
+import type { BlogPost } from '@/types/blog'
+import posts from 'virtual:blog-posts'
 
-// Eagerly inline every post as raw text; `?raw` keeps the frontmatter intact.
-//
-// The pattern MUST be written literally right here. Vite's `import.meta.glob` is
-// a compile-time transform and `validateLiteral` rejects anything that is not an
-// inline string literal — a `const` holding the string fails with "Invalid glob
-// import syntax: Could only use literals" in dev, while the production build
-// exits 0 and silently inlines ZERO posts (the blog renders empty even though the
-// Node-side sitemap, which reads the directory directly, still lists every post).
-// Keep in sync with POSTS_DIR; the check below enforces it.
-const mdModules = import.meta.glob('/content/posts/*.md', {
-  eager: true,
-  query: '?raw',
-  import: 'default',
-}) as Record<string, string>
+/**
+ * Post metadata compiled at build time by `scripts/blog-plugin.ts`.
+ *
+ * The list is already sorted newest-first and has drafts removed, so every
+ * accessor below is a plain read. Nothing in this module renders Markdown: the
+ * HTML lives in `@/lib/blog/content`, which only the article view imports, so
+ * the list page never downloads an article body.
+ */
+const allPosts: BlogPost[] = posts
 
-const resolvedPaths = Object.keys(mdModules)
-
-if (resolvedPaths.length === 0) {
+// Unreachable while the plugin is doing its job -- it throws when the content
+// directory is missing or empty. Kept so a future refactor that stops feeding
+// this module fails loudly instead of shipping an empty blog.
+if (allPosts.length === 0) {
   throw new Error(
-    `No posts matched "${POSTS_DIR}/*.md". Check that the directory exists and that ` +
-      'the glob written in src/lib/blog/index.ts matches POSTS_DIR in src/lib/blog/paths.ts.',
+    'virtual:blog-posts resolved no posts. See scripts/blog-plugin.ts and POSTS_DIR in src/lib/blog/paths.ts.',
   )
 }
-
-const strayPath = resolvedPaths.find((path) => !path.startsWith(`/${POSTS_DIR}/`))
-if (strayPath) {
-  throw new Error(
-    `The glob in src/lib/blog/index.ts resolved "${strayPath}", which is outside POSTS_DIR ` +
-      `("${POSTS_DIR}" in src/lib/blog/paths.ts). The two have drifted apart — update both.`,
-  )
-}
-
-function parseMarkdownFiles(): BlogPost[] {
-  const posts: BlogPost[] = []
-
-  for (const [path, raw] of Object.entries(mdModules)) {
-    const slug = slugFromPath(path)
-    const { data, content } = parseFrontmatter(raw)
-
-    const meta: BlogMeta = {
-      title: readString(data, 'title', slug),
-      published: readDate(data),
-      description: readString(data, 'description'),
-      image: readString(data, 'image'),
-      tags: readStringArray(data, 'tags'),
-      category: readString(data, 'category', '未分类'),
-      draft: readBoolean(data, 'draft'),
-    }
-
-    posts.push({ slug, ...meta, content })
-  }
-
-  // Newest first. `published` is an ISO date string by now, so a lexicographic
-  // compare is chronologically correct. Falling back to the slug keeps the
-  // order stable for posts that share a date (or have none).
-  posts.sort((a, b) => {
-    if (a.published !== b.published) return a.published < b.published ? 1 : -1
-    return a.slug.localeCompare(b.slug)
-  })
-
-  return posts.filter((post) => !post.draft)
-}
-
-const allPosts = parseMarkdownFiles()
 
 export function getAllPosts(): BlogPost[] {
   return allPosts
@@ -85,32 +32,14 @@ export function getAllCategories(): string[] {
   return [...new Set(allPosts.map((post) => post.category))]
 }
 
-export function getAllTags(): string[] {
-  return [...new Set(allPosts.flatMap((post) => post.tags))]
-}
-
-export function getPostsByCategory(category: string): BlogPost[] {
-  return allPosts.filter((post) => post.category === category)
-}
-
-export function getPostsByTag(tag: string): BlogPost[] {
-  return allPosts.filter((post) => post.tags.includes(tag))
-}
-
 export function searchPosts(query: string): BlogPost[] {
   const q = query.trim().toLowerCase()
   if (!q) return allPosts
   return allPosts.filter((post) =>
-    [post.title, post.description, post.category, ...post.tags]
-      .some((field) => field.toLowerCase().includes(q)),
+    [post.title, post.description, post.excerpt, post.category, ...post.tags].some((field) =>
+      field.toLowerCase().includes(q),
+    ),
   )
-}
-
-export interface ArchiveGroup {
-  label: string
-  year: number
-  month: number
-  posts: BlogPost[]
 }
 
 export interface YearArchiveGroup {
@@ -119,40 +48,20 @@ export interface YearArchiveGroup {
   posts: BlogPost[]
 }
 
-function selectPosts(category?: string | null): BlogPost[] {
-  if (!category) return allPosts
-  return allPosts.filter((post) => post.category === category)
-}
-
-export function getArchives(category?: string | null): ArchiveGroup[] {
-  const map = new Map<string, ArchiveGroup>()
-
-  for (const post of selectPosts(category)) {
-    if (!post.published) continue
-    const date = new Date(post.published)
-    const year = date.getUTCFullYear()
-    const month = date.getUTCMonth() + 1
-    const key = `${year}-${String(month).padStart(2, '0')}`
-
-    let group = map.get(key)
-    if (!group) {
-      group = { label: `${year}年${month}月`, year, month, posts: [] }
-      map.set(key, group)
-    }
-    group.posts.push(post)
-  }
-
-  return [...map.values()].sort((a, b) =>
-    a.year !== b.year ? b.year - a.year : b.month - a.month,
-  )
-}
-
+/**
+ * Group posts by year, newest first.
+ *
+ * The year is read from the ISO string rather than `new Date(...).getFullYear()`:
+ * a UTC-midnight date read with a local getter lands on the previous year for
+ * visitors west of UTC on January 1st.
+ */
 export function getArchivesByYear(category?: string | null): YearArchiveGroup[] {
+  const selected = category ? allPosts.filter((post) => post.category === category) : allPosts
   const map = new Map<number, YearArchiveGroup>()
 
-  for (const post of selectPosts(category)) {
-    if (!post.published) continue
-    const year = new Date(post.published).getUTCFullYear()
+  for (const post of selected) {
+    const year = Number(post.published.slice(0, 4))
+    if (!Number.isInteger(year)) continue
 
     let group = map.get(year)
     if (!group) {

@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { sitemapPlugin } from './scripts/sitemap'
+import { blogPlugin } from './scripts/blog-plugin'
 
 const GITHUB_REPO = 'https://github.com/Hachimi2333/Hachimi2333-Website'
 
@@ -38,7 +39,7 @@ const deletions = commitStat.match(/(\d+) deletion/)?.[1] ?? '0'
 const filesChanged = commitStat.match(/(\d+) file/)?.[1] ?? '0'
 
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), sitemapPlugin()],
+  plugins: [vue(), tailwindcss(), blogPlugin(), sitemapPlugin()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
