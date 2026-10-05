@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, BookOpenIcon, WrenchIcon } from '@lucide/vue'
+import { BookOpenIcon, WrenchIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import GithubMark from '@/components/icons/GithubMark.vue'
 import PageContainer from '@/components/layout/PageContainer.vue'
@@ -43,14 +43,10 @@ import { GITHUB_URL, SITE_NAME } from '@/lib/site'
     </div>
 
     <div class="flex flex-wrap justify-center gap-3">
-      <Button as-child class="group">
+      <Button as-child>
         <router-link to="/posts">
           <BookOpenIcon data-icon="inline-start" />
           博客
-          <ArrowRightIcon
-            data-icon="inline-end"
-            class="transition-transform group-hover:translate-x-1"
-          />
         </router-link>
       </Button>
 
