@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useWindowScroll } from '@vueuse/core'
-import { ArrowLeft, Calendar, Clock, FolderOpen, Tag } from '@lucide/vue'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CalendarIcon,
+  ClockIcon,
+  FolderOpenIcon,
+} from '@lucide/vue'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import PageBreadcrumb from '@/components/layout/PageBreadcrumb.vue'
 import ArticleToc from '@/components/blog/ArticleToc.vue'
 import ImageLightbox from '@/components/common/ImageLightbox.vue'
-import { getPostBySlug } from '@/lib/blog'
+import PageContainer from '@/components/layout/PageContainer.vue'
+import { getAllPosts, getPostBySlug } from '@/lib/blog'
 import { getRenderedPost } from '@/lib/blog/content'
+import { postUrl } from '@/lib/blog/paths'
 import { formatDate } from '@/lib/date'
 
 const route = useRoute()
-const router = useRouter()
-const { y: scrollY } = useWindowScroll()
 
 const post = computed(() => getPostBySlug(route.params.slug as string))
 
@@ -27,21 +31,21 @@ const post = computed(() => getPostBySlug(route.params.slug as string))
 const rendered = computed(() => (post.value ? getRenderedPost(post.value.slug) : undefined))
 const tocHeadings = computed(() => rendered.value?.headings.filter((h) => h.level >= 2) ?? [])
 
-const scrolled = computed(() => scrollY.value > 300)
-const hasToc = computed(() => tocHeadings.value.length > 0)
-const backAtRight = computed(() => !hasToc.value && !scrolled.value)
+/**
+ * Neighbours in list order, which is newest first: the left card leads to the
+ * more recent post and the right card to the older one. They are labelled with
+ * dates rather than 上一篇/下一篇, which Chinese blogs use in both directions.
+ */
+const neighbours = computed(() => {
+  const posts = getAllPosts()
+  const index = posts.findIndex((entry) => entry.slug === post.value?.slug)
+  if (index < 0) return { newer: undefined, older: undefined }
+  return { newer: posts[index - 1], older: posts[index + 1] }
+})
 
 const lightboxVisible = ref(false)
 const lightboxSrc = ref('')
 const lightboxAlt = ref('')
-
-function goBack() {
-  if (window.history.length > 1) {
-    router.back()
-  } else {
-    router.push('/posts')
-  }
-}
 
 function openLightbox(src: string, alt?: string) {
   lightboxSrc.value = src
@@ -109,87 +113,121 @@ function handleArticleClick(event: MouseEvent) {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-4xl px-4 py-8">
-    <!-- Loaded: post found -->
-    <template v-if="post">
-      <PageBreadcrumb :items="[{ label: '首页', to: '/' }, { label: '博客', to: '/posts' }, { label: post.title }]" />
+  <PageContainer>
+    <template v-if="post && rendered">
+      <router-link
+        to="/posts"
+        class="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon class="size-4" />
+        返回博客
+      </router-link>
 
-      <!-- Post header -->
-      <header class="mb-6">
-        <h1 class="mb-4 text-3xl font-bold tracking-tight md:text-4xl">{{ post.title }}</h1>
-        <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <div class="flex items-center gap-1.5">
-            <Calendar class="size-4" />
-            <span>{{ formatDate(post.published) }}</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <Clock class="size-4" />
-            <span>{{ post.readingTime }} 分钟</span>
-          </div>
-          <div v-if="post.category" class="flex items-center gap-1.5">
-            <FolderOpen class="size-4" />
-            <span>{{ post.category }}</span>
-          </div>
-          <div v-if="post.tags.length" class="flex items-center gap-1.5">
-            <Tag class="size-4" />
-            <span>{{ post.tags.join(' / ') }}</span>
-          </div>
+      <header class="mt-6 flex flex-col gap-4">
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+          {{ post.title }}
+        </h1>
+
+        <p v-if="post.description" class="max-w-3xl text-base text-muted-foreground">
+          {{ post.description }}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+          <span class="flex items-center gap-1.5">
+            <CalendarIcon class="size-3.5" />
+            <time :datetime="post.published">{{ formatDate(post.published) }}</time>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <ClockIcon class="size-3.5" />
+            {{ post.readingTime }} 分钟
+          </span>
+          <span class="flex items-center gap-1.5">
+            <FolderOpenIcon class="size-3.5" />
+            {{ post.category }}
+          </span>
+          <Badge v-for="tag in post.tags" :key="tag" variant="secondary">{{ tag }}</Badge>
         </div>
       </header>
 
-      <!-- Post content -->
-      <div class="flex gap-6">
-        <Card class="min-w-0 flex-1 py-0">
-          <div class="p-5">
-            <div v-if="post.image" class="mb-8 overflow-hidden rounded-md">
-              <img
-                :src="post.image"
-                :alt="post.title"
-                class="max-h-96 w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
+      <figure v-if="post.image" class="mt-8 overflow-hidden rounded-xl border border-border/60">
+        <img
+          :src="post.image"
+          :alt="post.title"
+          class="aspect-2/1 w-full object-cover"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
 
-            <!-- eslint-disable-next-line vue/no-v-html -- trusted local Markdown -->
-            <article class="prose max-w-none scroll-mt-20" v-html="rendered?.html" @click="handleArticleClick" />
-          </div>
-        </Card>
+      <div v-if="tocHeadings.length" class="mt-8 lg:hidden">
+        <ArticleToc :headings="tocHeadings" variant="inline" />
+      </div>
 
-        <!-- Desktop sidebar: back button + TOC -->
-        <div class="hidden w-56 shrink-0 flex-col gap-4 self-start lg:sticky lg:top-20 lg:flex">
-          <Card>
-            <Button variant="ghost" class="w-full justify-start" @click="goBack">
-              <ArrowLeft data-icon="inline-start" />
-              返回文章列表
-            </Button>
-          </Card>
-          <ArticleToc :headings="tocHeadings" />
+      <div
+        class="mt-8 grid gap-10"
+        :class="tocHeadings.length ? 'lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12' : ''"
+      >
+        <!-- eslint-disable-next-line vue/no-v-html -- trusted local Markdown -->
+        <article
+          class="prose min-w-0 max-w-none"
+          v-html="rendered.html"
+          @click="handleArticleClick"
+        />
+
+        <div v-if="tocHeadings.length" class="hidden lg:block">
+          <ArticleToc :headings="tocHeadings" variant="rail" />
         </div>
       </div>
 
-      <!-- Mobile floating back button -->
-      <button
-        class="fixed bottom-8 z-100 flex size-10 items-center justify-center rounded-md border border-border bg-background shadow-sm transition-all duration-200 hover:bg-accent lg:hidden"
-        :class="backAtRight ? 'right-4 sm:right-8' : 'right-16 sm:right-20'"
-        aria-label="返回文章列表"
-        @click="goBack"
+      <nav
+        v-if="neighbours.newer || neighbours.older"
+        class="mt-12 grid gap-3 border-t border-border/60 pt-6 sm:grid-cols-2"
+        aria-label="相邻文章"
       >
-        <ArrowLeft class="size-5 text-foreground" />
-      </button>
+        <router-link
+          v-if="neighbours.newer"
+          :to="postUrl(neighbours.newer.slug)"
+          class="group flex flex-col gap-1 rounded-xl border border-border/60 p-4 transition-colors hover:bg-muted/50"
+        >
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <ArrowLeftIcon class="size-3.5" />
+            {{ formatDate(neighbours.newer.published) }}
+          </span>
+          <span
+            class="text-sm font-medium text-foreground transition-colors group-hover:text-primary"
+          >
+            {{ neighbours.newer.title }}
+          </span>
+        </router-link>
+
+        <router-link
+          v-if="neighbours.older"
+          :to="postUrl(neighbours.older.slug)"
+          class="group flex flex-col gap-1 rounded-xl border border-border/60 p-4 transition-colors hover:bg-muted/50 sm:items-end"
+        >
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
+            {{ formatDate(neighbours.older.published) }}
+            <ArrowRightIcon class="size-3.5" />
+          </span>
+          <span
+            class="text-sm font-medium text-foreground transition-colors group-hover:text-primary sm:text-right"
+          >
+            {{ neighbours.older.title }}
+          </span>
+        </router-link>
+      </nav>
     </template>
 
-    <!-- Not found -->
-    <template v-else>
-      <div class="py-24 text-center">
-        <h1 class="mb-2 text-2xl font-bold">文章未找到</h1>
-        <p class="mb-6 text-muted-foreground">你访问的文章不存在</p>
-        <Button @click="goBack">
-          <ArrowLeft data-icon="inline-start" />
+    <div v-else class="flex flex-col items-center gap-4 py-20 text-center">
+      <h1 class="text-xl font-semibold">文章未找到</h1>
+      <p class="text-sm text-muted-foreground">这篇文章不存在，或者已经被移除了</p>
+      <Button as-child class="mt-1">
+        <router-link to="/posts">
+          <ArrowLeftIcon data-icon="inline-start" />
           返回博客
-        </Button>
-      </div>
-    </template>
+        </router-link>
+      </Button>
+    </div>
 
     <ImageLightbox
       :visible="lightboxVisible"
@@ -197,5 +235,5 @@ function handleArticleClick(event: MouseEvent) {
       :alt="lightboxAlt"
       @close="closeLightbox"
     />
-  </div>
+  </PageContainer>
 </template>
