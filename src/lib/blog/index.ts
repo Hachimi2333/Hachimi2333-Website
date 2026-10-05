@@ -32,14 +32,23 @@ export function getAllCategories(): string[] {
   return [...new Set(allPosts.map((post) => post.category))]
 }
 
-export function searchPosts(query: string): BlogPost[] {
-  const q = query.trim().toLowerCase()
-  if (!q) return allPosts
-  return allPosts.filter((post) =>
-    [post.title, post.description, post.excerpt, post.category, ...post.tags].some((field) =>
-      field.toLowerCase().includes(q),
-    ),
-  )
+export interface PostFilter {
+  /** Substring match against the title, excerpt, category and tags. */
+  search?: string
+  category?: string | null
+}
+
+export function filterPosts(filter: PostFilter = {}): BlogPost[] {
+  const query = filter.search?.trim().toLowerCase() ?? ''
+  const category = filter.category ?? null
+
+  return allPosts.filter((post) => {
+    if (category && post.category !== category) return false
+    if (!query) return true
+    return [post.title, post.excerpt, post.category, ...post.tags].some((field) =>
+      field.toLowerCase().includes(query),
+    )
+  })
 }
 
 export interface YearArchiveGroup {
@@ -49,17 +58,16 @@ export interface YearArchiveGroup {
 }
 
 /**
- * Group posts by year, newest first.
+ * Group an already-filtered list by year, newest year first.
  *
  * The year is read from the ISO string rather than `new Date(...).getFullYear()`:
  * a UTC-midnight date read with a local getter lands on the previous year for
  * visitors west of UTC on January 1st.
  */
-export function getArchivesByYear(category?: string | null): YearArchiveGroup[] {
-  const selected = category ? allPosts.filter((post) => post.category === category) : allPosts
+export function groupPostsByYear(source: BlogPost[]): YearArchiveGroup[] {
   const map = new Map<number, YearArchiveGroup>()
 
-  for (const post of selected) {
+  for (const post of source) {
     const year = Number(post.published.slice(0, 4))
     if (!Number.isInteger(year)) continue
 

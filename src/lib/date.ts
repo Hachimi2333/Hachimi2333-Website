@@ -32,10 +32,3 @@ export function formatDate(value: string): string {
   if (!parts) return value
   return `${parts.year}年${parts.month}月${parts.day}日`
 }
-
-/** `2022-09-11` → `09-11` */
-export function formatMonthDay(value: string): string {
-  const parts = parseParts(value)
-  if (!parts) return value
-  return `${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`
-}
