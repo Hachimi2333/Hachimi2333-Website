@@ -61,13 +61,13 @@ vite build                      # closeBundle 里跑 scripts/prerender.ts
 │   │   ├── common/           # 手写组件：ClientOnly, ColorPicker, ImageLightbox
 │   │   ├── icons/            # 品牌图标（GithubMark，Lucide 已移除品牌图标）
 │   │   ├── layout/           # AppLayout, AppHeader, AppFooter, BackToTop,
-│   │   │                     # BeianInfo, GitCommitPopover, PageContainer, PageHeader
+│   │   │                     # BeianInfo, SystemInfoPopover, PageContainer, PageHeader
 │   │   ├── tools/            # ToolLayout
 │   │   └── ui/               # shadcn-vue 组件，只由 CLI 管理
-│   ├── composables/          # useTheme, useGitInfo
+│   ├── composables/          # useTheme, useSystemInfo
 │   ├── lib/
 │   │   ├── blog/             # index(查询), content(HTML), paths, frontmatter, markdown, renderer
-│   │   ├── date.ts, iconify.ts, seo.ts, site.ts, tools.ts, utils.ts
+│   │   ├── date.ts, build.ts, iconify.ts, network.ts, seo.ts, site.ts, tools.ts, utils.ts
 │   ├── router/
 │   ├── types/                # 共享类型
 │   ├── views/                # HomeView, ToolsView, NotFoundView, blog/, tools/

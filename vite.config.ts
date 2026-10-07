@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
+import fs from 'node:fs'
+import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { sitemapPlugin } from './scripts/sitemap'
 import { blogPlugin } from './scripts/blog-plugin'
@@ -44,11 +46,51 @@ const commitHashFull = git(['rev-parse', 'HEAD'])
 const commitSubject = git(['log', '-1', '--pretty=%s'])
 const commitBody = git(['log', '-1', '--pretty=%b'])
 
-// Additions/deletions/file count for the current HEAD commit.
-const commitStat = git(['diff', '--shortstat', 'HEAD~1', 'HEAD'])
-const insertions = commitStat.match(/(\d+) insertion/)?.[1] ?? '0'
-const deletions = commitStat.match(/(\d+) deletion/)?.[1] ?? '0'
-const filesChanged = commitStat.match(/(\d+) file/)?.[1] ?? '0'
+/**
+ * One instant, shared by every build-time timestamp below.
+ *
+ * Reading the clock once keeps `__BUILD_YEAR__`, `__BUILD_TIME__` and
+ * `__BUILD_TIMESTAMP__` describing the same build even if the process crosses a
+ * minute (or a year) boundary halfway through -- inconsistent metadata is worse
+ * than metadata that is off by a second.
+ */
+const buildTime = new Date()
+
+/**
+ * `YYYY-MM-DD HH:mm UTC+8` -- the build instant rendered in Beijing time.
+ *
+ * Anchored to a fixed UTC+8 offset rather than the build host's local timezone,
+ * so a build run on a non-Beijing machine (CI in another region) still reports
+ * the wall-clock the visitor expects. `toLocaleString` is avoided: its output
+ * depends on the ICU data built into the running Node, and every formatting
+ * option is a timezone conversion waiting to be wrong. The parts are read
+ * directly from a timestamp shifted into UTC+8, and the offset is shown so the
+ * reader knows which clock the numbers describe.
+ */
+function formatBuildTime(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  const beijing = new Date(date.getTime() + 8 * 60 * 60 * 1000)
+
+  return (
+    `${beijing.getUTCFullYear()}-${pad(beijing.getUTCMonth() + 1)}-${pad(beijing.getUTCDate())} ` +
+    `${pad(beijing.getUTCHours())}:${pad(beijing.getUTCMinutes())} UTC+8`
+  )
+}
+
+const rootPackageJson = path.join(fileURLToPath(new URL('.', import.meta.url)), 'package.json')
+
+/**
+ * The site's own version, read from the manifest rather than restated here.
+ *
+ * A constant next to `define` would drift the first time `npm version` ran.
+ */
+function readPackageVersion(): string {
+  try {
+    return String(JSON.parse(fs.readFileSync(rootPackageJson, 'utf-8')).version ?? '')
+  } catch {
+    return ''
+  }
+}
 
 export default defineConfig(({ command }) => ({
   plugins: [vue(), tailwindcss(), blogPlugin(), sitemapPlugin({ siteUrl }), prerenderPlugin()],
@@ -85,14 +127,17 @@ export default defineConfig(({ command }) => ({
     // warnings.
     __HYDRATE__: JSON.stringify(command === 'build'),
     __SITE_URL__: JSON.stringify(siteUrl),
-    __BUILD_YEAR__: String(new Date().getFullYear()),
+    __BUILD_YEAR__: String(buildTime.getFullYear()),
     __COMMIT_HASH__: JSON.stringify(commitHash),
     __COMMIT_HASH_FULL__: JSON.stringify(commitHashFull),
     __COMMIT_SUBJECT__: JSON.stringify(commitSubject),
     __COMMIT_BODY__: JSON.stringify(commitBody),
-    __COMMIT_INSERTIONS__: JSON.stringify(insertions),
-    __COMMIT_DELETIONS__: JSON.stringify(deletions),
-    __FILES_CHANGED__: JSON.stringify(filesChanged),
     __GITHUB_REPO__: JSON.stringify(GITHUB_REPO),
+    __PKG_VERSION__: JSON.stringify(readPackageVersion()),
+    __BUILD_TIME__: JSON.stringify(formatBuildTime(buildTime)),
+    __BUILD_TIMESTAMP__: JSON.stringify(buildTime.getTime()),
+    __BUILD_PLATFORM__: JSON.stringify(process.platform),
+    __BUILD_ARCH__: JSON.stringify(process.arch),
+    __BUILD_NODE_VERSION__: JSON.stringify(process.version),
   },
 }))

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import GitCommitPopover from './GitCommitPopover.vue'
+import SystemInfoPopover from './SystemInfoPopover.vue'
 import BeianInfo from './BeianInfo.vue'
 import ClientOnly from '@/components/common/ClientOnly.vue'
-import { useGitInfo } from '@/composables/useGitInfo'
+import { buildInfo } from '@/lib/build'
 import { SITE_NAME } from '@/lib/site'
 
 /**
@@ -17,9 +17,6 @@ import { SITE_NAME } from '@/lib/site'
  * and cannot mismatch.
  */
 const year = ref(__BUILD_YEAR__)
-
-// Only used for the popover's server-rendered stand-in.
-const { gitInfo } = useGitInfo()
 
 onMounted(() => {
   year.value = new Date().getFullYear()
@@ -42,9 +39,9 @@ onMounted(() => {
         <span class="text-border" aria-hidden="true">/</span>
 
         <ClientOnly>
-          <GitCommitPopover />
+          <SystemInfoPopover />
           <template #fallback>
-            <span class="px-1.5 font-mono text-xs">{{ gitInfo.hash }}</span>
+            <span class="px-1.5 font-mono text-xs">{{ buildInfo.version.site ? `v${buildInfo.version.site}` : '系统信息' }}</span>
           </template>
         </ClientOnly>
 

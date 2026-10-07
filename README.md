@@ -27,6 +27,7 @@
 - **Real per-page metadata** — title, description, canonical URL and Open Graph tags are written into each prerendered file, and updated again after a client-side navigation.
 - **Rounded, accessible UI** — [shadcn-vue](https://shadcn-vue.com) with the `reka-nova` preset on top of [reka-ui](https://reka-ui.com) primitives.
 - **Real 404s** — anything that was not prerendered is answered with `dist/404.html` and a 404 status.
+- **System info panel** — the footer's commit hash opens a panel showing the site version, the deployed commit, the build time and platform, and the CDN / edge the request was answered from. Every value is detected: the commit comes from `git`, the build facts from `process` and `package.json`, and the CDN from one `HEAD` request's response headers. Nothing is written down in the source.
 
 ## Tech stack
 
@@ -88,16 +89,18 @@ Output files rather than folder indexes, because of how Workers resolves HTML: w
 │   │   │                       #   (ClientOnly, ColorPicker, ImageLightbox)
 │   │   ├── icons/              # Brand icons Lucide no longer ships
 │   │   ├── layout/             # AppLayout, AppHeader, AppFooter, BackToTop,
-│   │   │                       #   BeianInfo, GitCommitPopover,
+│   │   │                       #   BeianInfo, SystemInfoPopover,
 │   │   │                       #   PageContainer, PageHeader
 │   │   ├── tools/              # ToolLayout
 │   │   └── ui/                 # shadcn-vue components — CLI-managed only
-│   ├── composables/            # useTheme, useGitInfo
+│   ├── composables/            # useTheme, useSystemInfo
 │   ├── lib/
 │   │   ├── blog/               # index (queries), content (HTML), paths,
 │   │   │                       #   frontmatter, markdown, renderer
 │   │   ├── date.ts             # Timezone-safe date formatting
+│   │   ├── build.ts            # Build facts injected by vite.config.ts
 │   │   ├── iconify.ts          # Iconify API client
+│   │   ├── network.ts          # Runtime CDN / edge detection
 │   │   ├── seo.ts              # Per-route title / description / canonical
 │   │   ├── site.ts             # Site name, origin, links
 │   │   ├── tools.ts            # Tool registry/manifest
