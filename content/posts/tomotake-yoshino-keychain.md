@@ -2,7 +2,7 @@
 title: 朝武芳乃定制钥匙扣
 published: 2023-01-22
 description: ""
-image: "https://static.hachimi2333.top/blog/cover/6.webp"
+image: "https://static.hachimi2333.top/blog/posts/tomotake-yoshino-keychain/cover.png"
 tags: ["日常"]
 category: 日常
 draft: false
@@ -15,4 +15,4 @@ draft: false
 
 前几天我自己定制的钥匙扣也终于到了，不过快递送了7天也挺难绷的（）
 
-![朝武芳乃钥匙扣](https://static.hachimi2333.top/blog/posts/6/Yoshino.webp)
+![朝武芳乃钥匙扣](https://static.hachimi2333.top/blog/posts/tomotake-yoshino-keychain/img/tomotake-yoshino-keychain.png)

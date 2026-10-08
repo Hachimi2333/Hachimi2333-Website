@@ -30,5 +30,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Images live in the B2 bucket; this is only a local working copy of it.
+# Not part of the build and far too large to keep in history.
+content/static/
+
 # Agent tooling (skills are installed locally, not committed)
 .agents/

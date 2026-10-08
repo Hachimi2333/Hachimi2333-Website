@@ -2,7 +2,7 @@
 title: 免费泛域名 SSL 证书申请
 published: 2022-09-12
 description: "免费泛域名 Let's Encrypt 证书申请"
-image: "https://static.hachimi2333.top/blog/cover/2.webp"
+image: "https://static.hachimi2333.top/blog/posts/free-wildcard-ssl-certificate/cover.png"
 tags: ["SSL证书", "白嫖"]
 category: 建站
 draft: false
@@ -22,7 +22,7 @@ draft: false
 
 注册完来到申请证书，输入域名，勾选**泛域名**，如图。
 
-![输入域名](https://static.hachimi2333.top/blog/posts/2/domain.webp)
+![输入域名](https://static.hachimi2333.top/blog/posts/free-wildcard-ssl-certificate/img/enter-domain.png)
 
 ### 定义CSR
 
@@ -32,13 +32,13 @@ draft: false
 
 选择`Let's Encrypt`渠道，支持泛域名，缺点是有效期三个月，如图。
 
-![Let's Encrypt渠道](https://static.hachimi2333.top/blog/posts/2/letsencrypt.webp)
+![Let's Encrypt渠道](https://static.hachimi2333.top/blog/posts/free-wildcard-ssl-certificate/img/select-letsencrypt-ca.png)
 
 ## 下载证书
 
 完成后下载证书压缩包到本地，解压。内容如图。
 
-![证书压缩包](https://static.hachimi2333.top/blog/posts/2/cert.webp)
+![证书压缩包](https://static.hachimi2333.top/blog/posts/free-wildcard-ssl-certificate/img/certificate-archive.png)
 
 其中`private.pem`为秘钥，`fullchain.crt`为证书文件，可用记事本打开。
 

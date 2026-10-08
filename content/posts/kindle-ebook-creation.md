@@ -2,7 +2,7 @@
 title: Kindle电子书制作
 published: 2023-01-23
 description: "将TXT、UMD等格式的电子书制作成AZW3格式的Kindle电子书"
-image: "https://static.hachimi2333.top/blog/cover/7.webp"
+image: "https://static.hachimi2333.top/blog/posts/kindle-ebook-creation/cover.png"
 tags: ["Kindle"]
 category: 其他
 draft: false
@@ -18,7 +18,7 @@ draft: false
 
 进入软件后点击左上角**添加书籍**，导入电子书即可。界面长下面这个样子。
 
-![软件界面](https://static.hachimi2333.top/blog/posts/7/calibre.webp)
+![软件界面](https://static.hachimi2333.top/blog/posts/kindle-ebook-creation/img/calibre-interface.png)
 
 ## 推送
 
@@ -30,7 +30,7 @@ draft: false
 
 再点击**发送到设备**即可。
 
-![发送到设备](https://static.hachimi2333.top/blog/posts/7/push.webp)
+![发送到设备](https://static.hachimi2333.top/blog/posts/kindle-ebook-creation/img/send-to-device.png)
 
 ## 封面
 
@@ -40,7 +40,7 @@ draft: false
 
 在你转换至AZW3格式时，它会默认帮你将第一页设为封面，你也可以在下面的文件选择框里自定义。
 
-![修改封面图像](https://static.hachimi2333.top/blog/posts/7/cover.webp)
+![修改封面图像](https://static.hachimi2333.top/blog/posts/kindle-ebook-creation/img/edit-cover-image.png)
 
 转换完之后，推送到设备，你会发现封面只存在一瞬间。
 
@@ -64,7 +64,7 @@ fcww
 
 进入后点击**导入umd**，填写书籍信息，等待导入成功。
 
-![导入UMD](https://static.hachimi2333.top/blog/posts/7/umd.webp)
+![导入UMD](https://static.hachimi2333.top/blog/posts/kindle-ebook-creation/img/import-umd.png)
 
 选择导出**epub**，添加入Calibre书库即可。
 

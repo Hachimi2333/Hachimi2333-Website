@@ -2,7 +2,7 @@
 title: 配置CORP保护自己的图片
 published: 2026-02-19
 description: "自己的图片不想被别的网站引用？配置CORP来实现防盗链！"
-image: "https://static.hachimi2333.top/blog/cover/13.webp"
+image: "https://static.hachimi2333.top/blog/posts/configure-corp-to-protect-images/cover.png"
 tags: ["CORP"]
 category: 建站
 draft: false
@@ -24,17 +24,17 @@ CORP（Cross-Origin Resource Policy）是一种跨域资源策略，用于保护
 
 按照如图创建以下规则。
 
-![规则](https://static.hachimi2333.top/blog/posts/13/eo-rule-engine.webp)
+![规则](https://static.hachimi2333.top/blog/posts/configure-corp-to-protect-images/img/edgeone-rule-engine.png)
 
 ### 效果
 
 打开浏览器F12开发者模式可以看到该图片的HTTP响应头中包含了`Cross-Origin-Resource-Policy: same-origin`，说明该图片已被成功配置CORP。
 
-![效果](https://static.hachimi2333.top/blog/posts/13/response-header.webp)
+![效果](https://static.hachimi2333.top/blog/posts/configure-corp-to-protect-images/img/response-header-corp.png)
 
 如果非该网站使用`img`标签引用，控制台可以看到被阻挡了。
 
-![被阻挡](https://static.hachimi2333.top/blog/posts/13/blocked.webp)
+![被阻挡](https://static.hachimi2333.top/blog/posts/configure-corp-to-protect-images/img/blocked-by-corp.png)
 
 ## CORP值
 

@@ -2,7 +2,7 @@
 title: Minecraft服务器搭建
 published: 2022-09-13
 description: "Minecraft服务器搭建指南"
-image: "https://static.hachimi2333.top/blog/cover/3.webp"
+image: "https://static.hachimi2333.top/blog/posts/minecraft-server-setup/cover.png"
 tags: ["Minecraft", "服务器"]
 category: 游戏
 draft: false
@@ -218,7 +218,7 @@ OP将默认拥有最高控制台权限，请谨慎给予玩家OP！
 
 等待出现以下内容，即可使用日志内IP进行连接。
 
-![隧道](https://static.hachimi2333.top/blog/posts/3/tunnel.webp)
+![隧道](https://static.hachimi2333.top/blog/posts/minecraft-server-setup/img/tunnel-log.png)
 
 ## 注意事项
 

@@ -16,7 +16,7 @@
 
 ## Features
 
-- **Prerendered pages** — `npm run build` writes one HTML file per route (`posts.html`, `posts/1.html`, `tools.html`, …). The browser gets the finished page immediately and Vue hydrates it; there is no client-side render on first load.
+- **Prerendered pages** — `npm run build` writes one HTML file per route (`posts.html`, `posts/hello-world.html`, `tools.html`, …). The browser gets the finished page immediately and Vue hydrates it; there is no client-side render on first load.
 - **Blog** — Markdown posts with tags, a category filter and client-side search, grouped by year on a single page. `?q=` and `?category=` live in the URL, so back/forward and shared links restore the view.
 - **Build-time syntax highlighting** — Shiki runs during the build, so the highlighted HTML is part of the page and **Shiki never ships to the browser**. A fine-grained bundle keeps only the languages actually used, and both themes are emitted as CSS variables so switching themes costs zero re-rendering.
 - **Code block extras** — `title="…"` header bars, `ins={…}` / `del={…}` line highlighting, and a copy button on every block.
@@ -64,7 +64,7 @@ The third stage also runs the prerender step, in its `closeBundle` hook, because
 2. `scripts/prerender.ts` imports the SSR bundle, renders every route in `listPages()`, and substitutes the app markup, `<title>`, description, `og:*` and canonical link into the client's `index.html`.
 3. Each result is written to `dist/<route>.html`, `dist/404.html` included, and `dist-ssr/` is deleted.
 
-Output files rather than folder indexes, because of how Workers resolves HTML: with `html_handling: drop-trailing-slash`, `/posts/1` serves `posts/1.html` directly and `/posts/1/` redirects back to it. A folder index would invert that and make the canonical URL the one that redirects.
+Output files rather than folder indexes, because of how Workers resolves HTML: with `html_handling: drop-trailing-slash`, `/posts/hello-world` serves `posts/hello-world.html` directly and `/posts/hello-world/` redirects back to it. A folder index would invert that and make the canonical URL the one that redirects.
 
 ## Project structure
 
@@ -154,14 +154,16 @@ The dev server prints its URL, usually <http://localhost:5173>.
 
 ## Writing a post
 
-Create a `.md` file in `content/posts/`. **The filename without `.md` is the slug**, so `content/posts/1.md` is served at `/posts/1`.
+Create a `.md` file in `content/posts/`. **The filename without `.md` is the slug**, so `content/posts/hello-world.md` is served at `/posts/hello-world`.
+
+Pick a slug from the **English title of the post**, lowercased and hyphenated (`aaa-bbb-ccc`) — `minecraft-server-setup`, `xiaomi-15-review`. Slugs appear in URLs, in the sitemap, and in search results, so they must stay stable: renaming a file changes every link to that post.
 
 ```markdown
 ---
 title: Hello, world
 published: 2026-04-24
 description: "A short summary shown in the list, the search results, and the page metadata"
-image: "https://example.com/cover.webp"
+image: "https://static.hachimi2333.top/blog/cover/hello-world.webp"
 tags: ["Vue", "Notes"]
 category: Engineering
 draft: false
@@ -171,6 +173,21 @@ draft: false
 
 Body text...
 ```
+
+### Images
+
+Post images are stored in a Backblaze B2 bucket served at `https://static.hachimi2333.top/blog/`. `content/static/` is a **local working copy of that bucket and is not part of the build** — nothing there is read or emitted, so the directory can be synced with B2 independently.
+
+Every post's images live in **one directory named after its slug**, so they can never be confused with another post's:
+
+| Local path | Bucket key | Referenced from |
+| --- | --- | --- |
+| `content/static/posts/<slug>/cover.png` | `blog/posts/<slug>/cover.png` | frontmatter `image` |
+| `content/static/posts/<slug>/img/<name>.png` | `blog/posts/<slug>/img/<name>.png` | body `![](...)` |
+
+Image filenames follow the same rule as slugs: **lowercase, hyphen-separated** (`crypto-method`, `edgeone-rule-engine`). PNG is the only format used — it is lossless, so re-exporting an existing asset cannot degrade it.
+
+Renaming a post's slug therefore implies renaming its image directory, and updating both the frontmatter `image` and the body URLs.
 
 ### Frontmatter
 

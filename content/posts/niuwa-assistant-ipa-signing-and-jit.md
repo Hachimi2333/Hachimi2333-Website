@@ -2,7 +2,7 @@
 title: 牛蛙助手签名IPA，并开启JIT
 published: 2022-12-11
 description: "牛蛙助手使用教程"
-image: "https://static.hachimi2333.top/blog/cover/5.webp"
+image: "https://static.hachimi2333.top/blog/posts/niuwa-assistant-ipa-signing-and-jit/cover.png"
 tags: ["Apple"]
 category: 数码
 draft: false
@@ -22,7 +22,7 @@ draft: false
 
 双击打开`BAInstaller.exe`，将手机通过数据线连接到电脑。
 
-![安装牛蛙助手](https://static.hachimi2333.top/blog/posts/5/bfinstall.webp)
+![安装牛蛙助手](https://static.hachimi2333.top/blog/posts/niuwa-assistant-ipa-signing-and-jit/img/install-niuwa-assistant.png)
 
 点击`安装`等待应用安装
 
@@ -42,11 +42,11 @@ draft: false
 
 使用时不可断开专用网络
 
-![连接专用网络](https://static.hachimi2333.top/blog/posts/5/VPN.webp)
+![连接专用网络](https://static.hachimi2333.top/blog/posts/niuwa-assistant-ipa-signing-and-jit/img/connect-private-network.png)
 
 ## 使用
 
-![功能](https://static.hachimi2333.top/blog/posts/5/tools.webp)
+![功能](https://static.hachimi2333.top/blog/posts/niuwa-assistant-ipa-signing-and-jit/img/feature-overview.png)
 
 ### 签名
 

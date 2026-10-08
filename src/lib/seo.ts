@@ -18,7 +18,7 @@ export function canonicalPath(path: string): string {
   return withoutQuery || '/'
 }
 
-/** Absolute URL for a route path, e.g. `/posts/1` -> `https://…/posts/1`. */
+/** Absolute URL for a route path, e.g. `/posts/hello-world` -> `https://…/posts/hello-world`. */
 export function canonicalUrl(path: string): string {
   const clean = canonicalPath(path)
   return clean === '/' ? `${SITE_URL}/` : `${SITE_URL}${clean}`

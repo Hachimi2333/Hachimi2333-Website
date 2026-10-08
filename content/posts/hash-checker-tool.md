@@ -2,7 +2,7 @@
 title: Hash值检验工具
 published: 2023-02-12
 description: ""
-image: "https://static.hachimi2333.top/blog/cover/9.webp"
+image: "https://static.hachimi2333.top/blog/posts/hash-checker-tool/cover.png"
 tags: ["工具"]
 category: 工具
 draft: false

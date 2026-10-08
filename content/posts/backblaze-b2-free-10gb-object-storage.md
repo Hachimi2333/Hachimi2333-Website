@@ -2,7 +2,7 @@
 title: Backblaze B2 免费 10GB 对象存储
 published: 2022-09-11
 description: "免费对象储存申请指南"
-image: "https://static.hachimi2333.top/blog/cover/1.webp"
+image: "https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/cover.png"
 tags: ["对象储存", "白嫖"]
 category: 建站
 draft: false
@@ -18,7 +18,7 @@ draft: false
 
 注册的时候地区选择US West 即美国西部，如图
 
-![地区选择US West](https://static.hachimi2333.top/blog/posts/1/b2reg.webp)
+![地区选择US West](https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/img/select-region-us-west.png)
 
 注册完之后来到后台面板
 
@@ -26,7 +26,7 @@ draft: false
 
 点击 `Create a new bucket` 创建一个存储桶，名字随意，如图。
 
-![创建储存桶](https://static.hachimi2333.top/blog/posts/1/createbucket.webp)
+![创建储存桶](https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/img/create-new-bucket.png)
 
 创建时请选择公开**public**！
 
@@ -38,7 +38,7 @@ draft: false
 
 上传完之后，点击最右端信息按钮，即可查看文件信息，如图。
 
-![文件信息](https://static.hachimi2333.top/blog/posts/1/fileinfo.webp)
+![文件信息](https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/img/file-info.png)
 
 
 ## 接入 Cloudflare
@@ -51,11 +51,11 @@ draft: false
 
 添加记录，记录类型选 `CNAME`，名称随意，然后将Friendly URL里的根域名填进去，打开代理。
 
-![创建CNAME记录](https://static.hachimi2333.top/blog/posts/1/createcname.webp)
+![创建CNAME记录](https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/img/create-cname-record.png)
 
 接下来打开 `页面规则` ，添加一个规则，如图。
 
-![添加页面规则](https://static.hachimi2333.top/blog/posts/1/createrules.webp)
+![添加页面规则](https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/img/add-page-rule.png)
 
 接下来，把 Friendly URL 中的根域名换成你自己接入 Cloudflare 的域名就可以访问了！
 
@@ -67,7 +67,7 @@ draft: false
 
 修改SSL/TLS 加密模式为 **完全（严格）**，如图
 
-![SSL/TLS加密模式](https://static.hachimi2333.top/blog/posts/1/strictssl.webp)
+![SSL/TLS加密模式](https://static.hachimi2333.top/blog/posts/backblaze-b2-free-10gb-object-storage/img/strict-ssl-mode.png)
 
 ## 注意事项
 

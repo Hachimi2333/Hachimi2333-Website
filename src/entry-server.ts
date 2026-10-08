@@ -20,11 +20,12 @@ function pageFor(url: string): PrerenderPage {
 /**
  * Every route that gets its own HTML file.
  *
- * Files (`posts/1.html`) rather than folder indexes (`posts/1/index.html`),
- * because of how Workers resolves HTML assets. With `html_handling` of
- * `drop-trailing-slash`, `/posts/1` serves `posts/1.html` directly with a 200,
- * while `/posts/1/` 307s back to `/posts/1`. A folder index would invert that:
- * the canonical URL would be the one that redirects.
+ * Files (`posts/hello-world.html`) rather than folder indexes
+ * (`posts/hello-world/index.html`), because of how Workers resolves HTML assets.
+ * With `html_handling` of `drop-trailing-slash`, `/posts/hello-world` serves
+ * `posts/hello-world.html` directly with a 200, while `/posts/hello-world/` 307s
+ * back to it. A folder index would invert that: the canonical URL would be the
+ * one that redirects.
  *
  * It also keeps `npm run preview` honest -- Vite's static preview server maps an
  * extension-less path onto `<path>.html`, not onto `<path>/index.html`.

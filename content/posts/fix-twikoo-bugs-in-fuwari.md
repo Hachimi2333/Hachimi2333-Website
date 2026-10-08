@@ -2,7 +2,7 @@
 title: 修复Twikoo在Fuwari中的bug
 published: 2026-02-01
 description: "修复点赞和评论会回弹页面顶部、黑夜模式不适配、加载图标位置等问题"
-image: "https://static.hachimi2333.top/blog/cover/12.webp"
+image: "https://static.hachimi2333.top/blog/posts/fix-twikoo-bugs-in-fuwari/cover.png"
 tags: ["Twikoo"]
 category: 建站
 draft: false
@@ -144,7 +144,7 @@ npm run build
 
 很快就能在`dist`目录看到编译后的js文件了。
 
-![编译](https://static.hachimi2333.top/blog/posts/12/dist.webp)
+![编译](https://static.hachimi2333.top/blog/posts/fix-twikoo-bugs-in-fuwari/img/build-output.png)
 
 ### 使用
 

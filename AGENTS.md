@@ -50,6 +50,10 @@ vite build                      # closeBundle 里跑 scripts/prerender.ts
 
 ```
 ├── content/posts/            # Markdown 博客文章，文件名即 slug
+├── content/static/           # 图片本地副本（= B2 储存桶内容），不参与构建
+│   └── posts/<slug>/         # 每篇文章一个目录
+│       ├── cover.png         # 封面图
+│       └── img/<name>.png    # 正文图，aaa-bbb-ccc 命名
 ├── scripts/                  # 只在 Node 里跑，绝不进前端包
 │   ├── blog-plugin.ts        # 把文章编译成 virtual:blog-* 虚拟模块
 │   ├── prerender.ts          # 把每个路由渲染成 dist/<route>.html
@@ -158,6 +162,10 @@ vite build                      # closeBundle 里跑 scripts/prerender.ts
 
 ### 博客与渲染
 - Markdown 放 `content/posts/`，文件名即 slug，URL 是 `/posts/<slug>`
+- **slug 用文章标题的英文，小写、连字符分隔（`aaa-bbb-ccc`）**，如 `minecraft-server-setup`、`xiaomi-15-review`。slug 出现在 URL、sitemap 和搜索结果里，**改文件名等于换掉该文章所有链接**，不要随手改
+- **改 slug 时要连 `content/static/posts/` 里的图片目录一起改**，并同步更新 frontmatter `image` 与正文 `![](...)` 里的 URL
+- 图片一律 **PNG**（无损）；路径按文章 slug 分目录：`blog/posts/<slug>/cover.png` 是封面，`blog/posts/<slug>/img/<aaa-bbb-ccc>.png` 是正文图
+- 图片文件名同样用 **小写连字符**（`aaa-bbb-ccc`），不要用 PascalCase 或缩写
 - Frontmatter：title, published, description, image, tags, category, draft
 - `published` 可能是 YAML `Date`，统一用 `@/lib/blog/frontmatter` 的 `readDate()` 归一化
 - **`renderMarkdown()` 只在构建期调用**（由 `scripts/blog-plugin.ts` 驱动），返回 `{ html, headings }`；前端从 `virtual:blog-content` 同步取结果，不要再加 loading 状态
@@ -198,8 +206,9 @@ vite build                      # closeBundle 里跑 scripts/prerender.ts
 - `type`：`feat` / `fix` / `refactor` / `docs` / `chore` / `style` / `perf` / `build` / `test`
 - `scope` 可选，用目录或领域名：`blog`、`tools`、`build`、`ui`、`ssg`
 - 标题用英文祈使句（`add`，不是 `added`），句尾不加句号
+- **一次会话/一项任务的改动合成一条提交**，不要为了「每件事一条」把一次连贯的改动拆成一串碎片提交（曾经把 slug 重命名、图片迁移、文档更新拆成多条，review 时看不出全貌）。**跨领域的、可以独立回退的改动才拆开**——例如顺手修了一个无关的 bug，那部分单独交
 - 正文用英文。写**动机、约束和被否决的方案**，不要复述 diff（`git show` 已经能看到）
-- 一次提交只做一件事，跨领域的改动拆开；正文要点用 `-` 列表
+- 正文要点用 `-` 列表
 - 行为变化、破坏性影响、验证方式都要写清楚
 - 多段正文用 `git commit -F <file>` 或第二个 `-m`，不要在一条 `-m` 里塞 `\n`
 
